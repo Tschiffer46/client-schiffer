@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import OmOss from './pages/OmOss'
 import Film from './pages/Film'
 import Lankar from './pages/Lankar'
+import Familjearkiv from './pages/Familjearkiv'
 
 function Nav() {
   const [open, setOpen] = useState(false)
@@ -13,6 +14,7 @@ function Nav() {
     { to: '/om-oss', label: 'Om oss' },
     { to: '/film', label: 'Film' },
     { to: '/lankar', label: 'Länkar' },
+    { to: '/familjearkiv', label: 'Familjearkiv' },
   ]
 
   return (
@@ -23,16 +25,33 @@ function Nav() {
         </NavLink>
 
         {/* Desktop */}
-        <div className="hidden sm:flex gap-6">
+        <div className="hidden sm:flex gap-6 items-center">
           {links.map(l => (
             <NavLink
               key={l.to}
               to={l.to}
               end={l.to === '/'}
               className={({ isActive }) =>
-                `text-sm font-medium transition-colors ${isActive ? 'text-[#5B8DB8]' : 'text-stone-500 hover:text-stone-800'}`
+                `text-sm font-medium transition-colors ${
+                  l.to === '/familjearkiv'
+                    ? isActive
+                      ? 'text-[#5B8DB8] flex items-center gap-1'
+                      : 'text-stone-500 hover:text-stone-800 flex items-center gap-1'
+                    : isActive
+                      ? 'text-[#5B8DB8]'
+                      : 'text-stone-500 hover:text-stone-800'
+                }`
               }
             >
+              {l.to === '/familjearkiv' && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  className="opacity-60"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              )}
               {l.label}
             </NavLink>
           ))}
@@ -71,7 +90,7 @@ function Nav() {
                 `block px-4 py-3 text-sm font-medium border-b border-stone-100 transition-colors ${isActive ? 'text-[#5B8DB8]' : 'text-stone-600 hover:text-stone-900'}`
               }
             >
-              {l.label}
+              {l.to === '/familjearkiv' ? '🔒 ' : ''}{l.label}
             </NavLink>
           ))}
         </div>
@@ -99,6 +118,7 @@ export default function App() {
             <Route path="/om-oss" element={<OmOss />} />
             <Route path="/film" element={<Film />} />
             <Route path="/lankar" element={<Lankar />} />
+            <Route path="/familjearkiv" element={<Familjearkiv />} />
           </Routes>
         </main>
         <Footer />

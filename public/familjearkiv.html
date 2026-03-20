@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Familjearkiv Schiffer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f5f0eb;
+    --card: #ffffff;
+    --text: #2c2c2c;
+    --muted: #6b6b6b;
+    --accent: #8b5e3c;
+    --accent-light: #c4956a;
+    --border: #d4c5b5;
+    --hungary: #c4463a;
+    --sweden: #1d6aa5;
+    --norway: #003366;
+    --germany: #555;
+    --gen1: #9e8b7a;
+    --gen2: #b5956e;
+    --gen3: #8b5e3c;
+    --gen4: #6b8f71;
+    --gen5: #5a7d9a;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  header {
+    background: linear-gradient(135deg, #3a2a1a 0%, #5c3d2e 50%, #3a2a1a 100%);
+    color: #f5f0eb;
+    padding: 3rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    position: relative;
+    margin-bottom: 0.5rem;
+  }
+
+  header p {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    font-weight: 300;
+    position: relative;
+  }
+
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  nav button {
+    padding: 1rem 2rem;
+    border: none;
+    background: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+  }
+
+  nav button:hover { color: var(--accent); }
+  nav button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .view { display: none; padding: 2rem; max-width: 1400px; margin: 0 auto; }
+  .view.active { display: block; }
+
+  /* --- FAMILY TREE --- */
+  .tree-container {
+    overflow-x: auto;
+    padding: 2rem 0;
+  }
+
+  .generation {
+    margin-bottom: 2rem;
+  }
+
+  .gen-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid var(--border);
+    padding: 0.25rem 0 0.25rem 0.75rem;
+  }
+
+  .gen-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .person-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    min-width: 220px;
+    max-width: 280px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .person-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .person-card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-light);
+  }
+
+  .person-card .name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .person-card .dates {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .person-card .role {
+    font-size: 0.75rem;
+    color: var(--accent);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.4rem;
+  }
+
+  .person-card .country-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .country-hu { background: var(--hungary); }
+  .country-se { background: var(--sweden); }
+  .country-no { background: var(--norway); }
+  .country-de { background: var(--germany); }
+
+  .person-detail {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 1.5rem;
+    display: none;
+  }
+
+  .person-detail.visible { display: block; }
+
+  .person-detail h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .person-detail .meta {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .person-detail .story {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #444;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 0.4rem 1rem;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+
+  .detail-grid dt { color: var(--muted); font-weight: 500; }
+  .detail-grid dd { color: var(--text); }
+
+  /* --- TIMELINE --- */
+  .timeline {
+    position: relative;
+    padding-left: 3rem;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--hungary), var(--accent), var(--sweden));
+  }
+
+  .timeline-event {
+    position: relative;
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.3s;
+  }
+
+  .timeline-event:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .timeline-event::before {
+    content: '';
+    position: absolute;
+    left: -2.35rem;
+    top: 1.25rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: var(--bg);
+  }
+
+  .timeline-event.major::before {
+    background: var(--accent);
+    width: 14px;
+    height: 14px;
+    left: -2.45rem;
+  }
+
+  .timeline-event.historical {
+    background: #f9f5f0;
+    border-style: dashed;
+  }
+
+  .timeline-year {
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .timeline-title {
+    font-weight: 500;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .timeline-desc {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .timeline-tag {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.4rem;
+  }
+
+  .tag-family { background: #e8f0e8; color: #3a6b3a; }
+  .tag-history { background: #f0e8e0; color: #8b5e3c; }
+  .tag-migration { background: #e0e8f0; color: #1d6aa5; }
+
+  /* --- MAP ROUTE --- */
+  .map-section {
+    text-align: center;
+    padding: 2rem 0;
+  }
+
+  .route-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 2rem 0;
+  }
+
+  .route-stop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .route-dot {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .route-stop .place {
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+
+  .route-stop .detail {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .route-arrow {
+    font-size: 1.5rem;
+    color: var(--border);
+    padding: 0 0.25rem;
+  }
+
+  /* --- STATS --- */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 0.25rem;
+  }
+
+  /* --- GAPS --- */
+  .gap-card {
+    background: #fff8f0;
+    border: 1px dashed var(--accent-light);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .gap-card h4 {
+    font-size: 0.95rem;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .gap-card p {
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+  }
+
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  @media (max-width: 768px) {
+    header h1 { font-size: 1.8rem; }
+    nav button { padding: 0.75rem 1rem; font-size: 0.85rem; }
+    .person-card { min-width: 160px; }
+    .view { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Familjearkiv Schiffer</h1>
+  <p>Från Pécs till Sverige — en familjs resa genom historien</p>
+</header>
+
+<nav>
+  <button class="active" onclick="showView('overview')">Översikt</button>
+  <button onclick="showView('tree')">Släktträd</button>
+  <button onclick="showView('timeline')">Tidslinje</button>
+  <button onclick="showView('route')">Flyktvägen</button>
+  <button onclick="showView('gaps')">Att utforska</button>
+</nav>
+
+<!-- OVERVIEW -->
+<div id="overview" class="view active">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">40+</div>
+      <div class="stat-label">Registrerade personer</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">5+</div>
+      <div class="stat-label">Generationer</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">4</div>
+      <div class="stat-label">Länder — 🇺🇳 🇧🇻 🇩🇪 🇸🇪</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">9 077</div>
+      <div class="stat-label">DNA-matchningar</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">1873</div>
+      <div class="stat-label">Äldsta kända födelseår</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">3</div>
+      <div class="stat-label">Källor analyserade</div>
+    </div>
+  </div>
+
+  <h2 class="section-title" style="margin-top:2rem;">Familjens historia i korthet</h2>
+  <div style="max-width:800px; line-height:1.8; font-size:0.95rem; color:#444;">
+    <p style="margin-bottom:1rem;">Familjen Schiffer har rötter i fyra länder och bär spår av 1900-talets stora historiska katastrofer — det första världskriget, den tyska ockupationen av Norge, och den ungerska revolutionen 1956.</p>
+    <p style="margin-bottom:1rem;"><strong>Pappans sida (Ungern):</strong> Farfars far György Schiffer kom från Mörs i Ruhrområdet och dog i första världskriget. Farfar György blev vagnmakare i Pécs-regionen. Thomas far, Laszlo György Schiffer, föddes den 27 december 1933 i Pécs. Han deltog i 1956 års revolution, angavs och flydde den 13 januari 1957 via Jugoslavien till Sverige med Svenska Röda Korset.</p>
+    <p style="margin-bottom:1rem;"><strong>Mammans sida (Norge):</strong> Thomas mormor Åse Sand växte upp i centrala Trondheim. Under den tyska ockupationen 1940–45 fick hon ett barn — Åse Karin — med en tysk soldat vid namn Weber som kom från Dresden. Soldaten Weber förflyttades mot krigets slut till norra Norge, tillfångatogs av ryska styrkor och försvann. Åse Karin var ett <em>krigsbarn</em> och levde under stigmat "tysketøs" i efterkrigstidens Norge. Hon gick under sitt mellannamn "Karin" vid besök i Trondheim.</p>
+    <p>Mormor Åse fick senare tre halvbröder med Thomas mor: Leif Kristian och Georg med en man vid namn Grinde (som vägrade acceptera krigsbarnets närvaro hemma), och Jarle med brevbäraren Odd Strømsem — en omtyckt man som gav mormor hennes sista efternamn. Laszlo och Åse fick tre barn: Lars Göran (1969), Thomas (1972) och bosatte sig i Helsingborg-trakten.</p>
+  </div>
+</div>
+
+<!-- FAMILY TREE -->
+<div id="tree" class="view">
+  <h2 class="section-title">Släktträd</h2>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--hungary)"></div> Ungern</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--sweden)"></div> Sverige</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--norway)"></div> Norge</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--germany)"></div> Tyskland</div>
+  </div>
+
+  <div class="tree-container">
+    <div class="generation">
+      <div class="gen-label">Generation 1 — Farfars föräldrar (~1800-talet)</div>
+      <div class="gen-row">
+        <div class="person-card" onclick="showPerson('gyorgy1')">
+          <div class="country-dot country-de"></div>
+          <div class="name">György Schiffer (äldre)</div>
+          <div class="dates">Född Mörs — Dog i WWI</div>
+          <div class="role">Farfars far</div>
+        </div>
+        <div class="person-card" onclick="showPerson('susanna')">
+          <div class="name">Susanna Horesni</div>
+          <div class="dates">Dog i Rastadt, Tyskland</div>
+          <div class="role">Farfars mor</div>
+        </div>
+        <div class="person-card" onclick="showPerson('hans')">
+          <div class="country-dot country-se"></div>
+          <div class="name">Hans Lindberg</div>
+          <div class="dates">1873 — 1947</div>
+          <div class="role">Svägerskans mormorsfar</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="generation">
+      <div class="gen-label">Generation 2 — Far- och morföräldrar</div>
+      <div style="margin-bottom:0.5rem; font-size:0.8rem; color:var(--muted); font-style:italic;">Pappans sida (Ungern) &nbsp;|&nbsp; Mammans sida: Mormor Åse Sand och hennes tre relationer (Norge)</div>
+      <div class="gen-row">
+        <div class="person-card" onclick="showPerson('gyorgy2')">
+          <div class="country-dot country-hu"></div>
+          <div class="name">György Schiffer (farfar)</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Farfar — Vagnmakare, Schwab</div>
+        </div>
+        <div class="person-card" onclick="showPerson('maria_kiss')">
+          <div class="country-dot country-hu"></div>
+          <div class="name">Maria Kiss</div>
+          <div class="dates">Királyegyháza — Dog juni 1995</div>
+          <div class="role">Farmor</div>
+        </div>
+        <div class="person-card" onclick="showPerson('julia')">
+          <div class="country-dot country-hu"></div>
+          <div class="name">Julia</div>
+          <div class="dates">Királyegyháza / Harkány</div>
+          <div class="role">Farfars andra fru</div>
+        </div>
+        <div class="person-card" onclick="showPerson('ase_sand')" style="border-left:4px solid var(--norway);">
+          <div class="country-dot country-no"></div>
+          <div class="name">Åse Sand / Åse Strømsem</div>
+          <div class="dates">Trondheim — Dog maj 2010</div>
+          <div class="role">Mormor — 3 relationer, 4 barn</div>
+        </div>
+        <div class="person-card" onclick="showPerson('weber_soldat')">
+          <div class="country-dot country-de"></div>
+          <div class="name">Okänd Weber</div>
+          <div class="dates">Från Dresden — Försvann i norra Norge</div>
+          <div class="role">Tysk soldat · Åses biologiske far</div>
+        </div>
+        <div class="person-card" onclick="showPerson('grinde_far')">
+          <div class="country-dot country-no"></div>
+          <div class="name">Okänd Grinde</div>
+          <div class="dates">Norsk, datum okänt</div>
+          <div class="role">Far till Leif Kristian & Georg · Våldsam</div>
+        </div>
+        <div class="person-card" onclick="showPerson('odd')">
+          <div class="country-dot country-no"></div>
+          <div class="name">Odd Strømsem</div>
+          <div class="dates">Norsk brevbärare — omtyckt</div>
+          <div class="role">Far till Jarle · Mormorns sista man</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="generation">
+      <div class="gen-label">Generation 3 — Föräldrar &amp; morbrödrar</div>
+      <div class="gen-row">
+        <div class="person-card" onclick="showPerson('laszlo')" style="border-left:4px solid var(--hungary);">
+          <div class="country-dot country-hu"></div>
+          <div class="name">Laszlo György Schiffer</div>
+          <div class="dates">27 dec 1933, Pécs — 2011, Helsingborg</div>
+          <div class="role">Far</div>
+        </div>
+        <div class="person-card" onclick="showPerson('ase')" style="border-left:4px solid var(--norway);">
+          <div class="country-dot country-no"></div>
+          <div class="name">Åse Karin Weber</div>
+          <div class="dates">8 sep 1944, Trondheim — Helsingborg</div>
+          <div class="role">Mor · Kriegskind · kallades "Karin"</div>
+        </div>
+        <div class="person-card" onclick="showPerson('ference')">
+          <div class="country-dot country-hu"></div>
+          <div class="name">Ference Kiss (Ferri)</div>
+          <div class="dates">Aug 1938 — Maj 1994</div>
+          <div class="role">Farbror</div>
+        </div>
+        <div class="person-card" onclick="showPerson('leif')">
+          <div class="country-dot country-no"></div>
+          <div class="name">Leif Kristian Grinde</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Morbror · Halvsyskon med Åse</div>
+        </div>
+        <div class="person-card" onclick="showPerson('georg')">
+          <div class="country-dot country-no"></div>
+          <div class="name">Georg Grinde</div>
+          <div class="dates">1948</div>
+          <div class="role">Morbror · Halvsyskon med Åse</div>
+        </div>
+        <div class="person-card" onclick="showPerson('jarle')">
+          <div class="country-dot country-no"></div>
+          <div class="name">Jarle Strømsem</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Morbror · Halvsyskon med Åse</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="generation">
+      <div class="gen-label">Generation 4 — Thomas generation</div>
+      <div class="gen-row">
+        <div class="person-card" onclick="showPerson('lars')">
+          <div class="country-dot country-se"></div>
+          <div class="name">Lars Göran Schiffer</div>
+          <div class="dates">16 apr 1969</div>
+          <div class="role">Bror</div>
+        </div>
+        <div class="person-card" onclick="showPerson('susanne_s')">
+          <div class="country-dot country-se"></div>
+          <div class="name">Susanne Schiffer</div>
+          <div class="dates">1970</div>
+          <div class="role">Svägerska</div>
+        </div>
+        <div class="person-card selected" onclick="showPerson('thomas')" style="border-left:4px solid var(--sweden);">
+          <div class="country-dot country-se"></div>
+          <div class="name">Thomas Schiffer</div>
+          <div class="dates">27 jul 1972, Linköping</div>
+          <div class="role">Du</div>
+        </div>
+        <div class="person-card" onclick="showPerson('maria_j')">
+          <div class="country-dot country-se"></div>
+          <div class="name">Maria Cecilia Jansson</div>
+          <div class="dates">1 okt 1973, Lund</div>
+          <div class="role">Ex-maka</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="generation">
+      <div class="gen-label">Generation 4 — Norska kusiner</div>
+      <div class="gen-row">
+        <div class="person-card">
+          <div class="country-dot country-no"></div>
+          <div class="name">Stig Roar Grinde</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Kusin · Georgs son</div>
+        </div>
+        <div class="person-card">
+          <div class="country-dot country-no"></div>
+          <div class="name">Espen Grinde</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Kusin · Georgs son</div>
+        </div>
+        <div class="person-card" onclick="showPerson('tone')">
+          <div class="country-dot country-no"></div>
+          <div class="name">Tone Grinde</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Kusin · Leif Kristians dotter</div>
+        </div>
+        <div class="person-card">
+          <div class="country-dot country-no"></div>
+          <div class="name">Mikael Grinde</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Kusin · Leif Kristians son</div>
+        </div>
+        <div class="person-card">
+          <div class="country-dot country-no"></div>
+          <div class="name">Knut Grinde</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Kusin · Leif Kristians son</div>
+        </div>
+        <div class="person-card" onclick="showPerson('tommy')">
+          <div class="country-dot country-no"></div>
+          <div class="name">Tommy Strømsem</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Kusin · Jarles son</div>
+        </div>
+        <div class="person-card">
+          <div class="country-dot country-no"></div>
+          <div class="name">Kenneth Strømsem</div>
+          <div class="dates">Född 1992</div>
+          <div class="role">Kusin · Jarles son</div>
+        </div>
+        <div class="person-card">
+          <div class="country-dot country-no"></div>
+          <div class="name">Ida Strømsem</div>
+          <div class="dates">Född 1998</div>
+          <div class="role">Kusin · Jarles dotter</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="generation">
+      <div class="gen-label">Generation 5 — Thomas barn, syskonbarn &amp; norska kusiniernas barn</div>
+      <div class="gen-row">
+        <div class="person-card">
+          <div class="country-dot country-se"></div>
+          <div class="name">Elin Schiffer</div>
+          <div class="dates">1996</div>
+          <div class="role">Brorsdotter</div>
+        </div>
+        <div class="person-card">
+          <div class="country-dot country-se"></div>
+          <div class="name">Anna Karin Schiffer</div>
+          <div class="dates">2003</div>
+          <div class="role">Dotter</div>
+        </div>
+        <div class="person-card">
+          <div class="country-dot country-se"></div>
+          <div class="name">Sara Schiffer</div>
+          <div class="dates">1 sep 2008, Lund</div>
+          <div class="role">Dotter</div>
+        </div>
+        <div class="person-card">
+          <div class="country-dot country-no"></div>
+          <div class="name">Erika Grinde Kristiansen</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Tones dotter · Norsk kusin generation 5</div>
+        </div>
+        <div class="person-card">
+          <div class="country-dot country-no"></div>
+          <div class="name">Odin Grinde Kristiansen</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Tones son · Norsk kusin generation 5</div>
+        </div>
+        <div class="person-card">
+          <div class="country-dot country-no"></div>
+          <div class="name">Mia Grinde</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Knut/Mikaels dotter · Leif Kristians barnbarn</div>
+        </div>
+        <div class="person-card">
+          <div class="country-dot country-no"></div>
+          <div class="name">Emil</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Leif Kristians barnbarn · Gren okänd</div>
+        </div>
+        <div class="person-card">
+          <div class="country-dot country-no"></div>
+          <div class="name">Heather Cameron</div>
+          <div class="dates">Okänt födelseår</div>
+          <div class="role">Knut/Mikaels dotter · Syskonbarn till Tone</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="person-detail" class="person-detail"></div>
+</div>
+
+<!-- TIMELINE -->
+<div id="timeline" class="view">
+  <h2 class="section-title">Tidslinje</h2>
+  <p style="color:var(--muted); margin-bottom:2rem; font-size:0.9rem;">Familjens historia sammanflätad med historiska händelser</p>
+
+  <div class="timeline">
+    <div class="timeline-event">
+      <div class="timeline-year">~1870-talet</div>
+      <div class="timeline-title">Hans Lindberg föds</div>
+      <div class="timeline-desc">Äldsta kända personen i släkten, Susannes mormorsfar. Född 21 jan 1873.</div>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">Sent 1800-tal</div>
+      <div class="timeline-title">György Schiffer föds i Mörs, Ruhrområdet</div>
+      <div class="timeline-desc">Den äldsta kända Schiffer-generationen. Schwab — tyskt yrkesfolk som invandrat till Ungern.</div>
+      <span class="timeline-tag tag-family">Familj</span>
+    </div>
+
+    <div class="timeline-event historical">
+      <div class="timeline-year">1914–1918</div>
+      <div class="timeline-title">Första världskriget</div>
+      <div class="timeline-desc">György Schiffer (äldre) förlorar ett ben och dör i kriget. Susanna Horesni blir ensam.</div>
+      <span class="timeline-tag tag-history">Historia</span>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">~1930-talet</div>
+      <div class="timeline-title">St. Ivan och St. Gál slås samman</div>
+      <div class="timeline-desc">Orterna bildar Királyegyháza ("Kungens första hus"). Maria Kiss familj kommer härifrån.</div>
+    </div>
+
+    <div class="timeline-event major">
+      <div class="timeline-year">27 december 1933</div>
+      <div class="timeline-title">Laszlo György Schiffer föds i Pécs</div>
+      <div class="timeline-desc">Thomas far föds i Pécs, södra Ungern. Son till György Schiffer (vagnmakare) och Maria Kiss. Föräldrarna var aldrig gifta — kulturella skillnader mellan schwabisk och ungersk kultur.</div>
+      <span class="timeline-tag tag-family">Familj</span>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">Augusti 1938</div>
+      <div class="timeline-title">Ference (Ferri) Kiss föds</div>
+      <div class="timeline-desc">Laszlos lillebror, också utanför äktenskapet. Familjen bor hos farmors föräldrar i Királyegyháza.</div>
+      <span class="timeline-tag tag-family">Familj</span>
+    </div>
+
+    <div class="timeline-event historical">
+      <div class="timeline-year">1943</div>
+      <div class="timeline-title">Ryssarna går in i Rumänien</div>
+      <div class="timeline-desc">Julius befälsskola i Transsylvanien flyttas allt längre västerut. Hamnar till slut i Danmark där han blir krigsfånge.</div>
+      <span class="timeline-tag tag-history">Historia</span>
+    </div>
+
+    <div class="timeline-event major">
+      <div class="timeline-year">8 september 1944</div>
+      <div class="timeline-title">Åse Karin Weber föds i Trondheim</div>
+      <div class="timeline-desc">Thomas mor föds i Norge under andra världskrigets sista år.</div>
+      <span class="timeline-tag tag-family">Familj</span>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">1947</div>
+      <div class="timeline-title">Julius återvänder till Ungern</div>
+      <div class="timeline-desc">Efter krigsfångenskapen börjar Julius som fabriksarbetare. 35 000 personer arbetar i fabriken.</div>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">1949</div>
+      <div class="timeline-title">Laszlo flyttar till Budapest</div>
+      <div class="timeline-desc">Morbror Julius tar 16-årige Laszlo till Budapest för att lära sig ett yrke. Bor hos Julius i 21:a distriktet vid Csepel. Arbetar med att tillverka svarvar och fräsmaskiner.</div>
+      <span class="timeline-tag tag-migration">Migration</span>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">1953–1955</div>
+      <div class="timeline-title">Laszlo gör militärtjänst</div>
+      <div class="timeline-desc">Avslutas mellan jul och nyår 1955 — ett år före revolutionen.</div>
+    </div>
+
+    <div class="timeline-event major historical">
+      <div class="timeline-year">23 oktober 1956</div>
+      <div class="timeline-title">Ungerska revolutionen börjar</div>
+      <div class="timeline-desc">Folkresning mot kommunistregimen och sovjetiskt förtryck. Laszlo arbetar i fabriken under revolutionen. 30 fräsmaskiner i månaden tillverkas — samtliga skickas till Ryssland som krigsskadestånd.</div>
+      <span class="timeline-tag tag-history">Historia</span>
+    </div>
+
+    <div class="timeline-event historical">
+      <div class="timeline-year">6 november 1956</div>
+      <div class="timeline-title">Sovjetunionen slår till</div>
+      <div class="timeline-desc">Ryssarna omringar Budapest med trupper som funnits i landet sedan 1945. Ungerska militären stod på folkets sida men var för svag. Västvärlden fokuserade på Suezkrisen.</div>
+      <span class="timeline-tag tag-history">Historia</span>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">Julen 1956</div>
+      <div class="timeline-title">Laszlo besöker farfar i Harkány</div>
+      <div class="timeline-desc">Sista besöket hos farfar György och Julia innan flykten.</div>
+    </div>
+
+    <div class="timeline-event major">
+      <div class="timeline-year">11 januari 1957</div>
+      <div class="timeline-title">Sista upproret i Csepel</div>
+      <div class="timeline-desc">Militären söker efter Laszlo hemma hos Julius. Laszlo hade redan flyttat till ett arbetarhotell. Via Julius får han veta att han är eftersökt.</div>
+      <span class="timeline-tag tag-history">Historia</span>
+    </div>
+
+    <div class="timeline-event major">
+      <div class="timeline-year">13 januari 1957</div>
+      <div class="timeline-title">Laszlo flyr Budapest</div>
+      <div class="timeline-desc">Västgränsen mot Österrike stängd efter att 250 000 flytt. Laszlo flyr söderut med två kamrater. De hoppar på och av tåget vid varje station för att undvika kontroller.</div>
+      <span class="timeline-tag tag-migration">Migration</span>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">Januari 1957</div>
+      <div class="timeline-title">Gränsövergång till Jugoslavien</div>
+      <div class="timeline-desc">Vandrar över pusztan i mörkret. Möts av jugoslaviska soldater. Tusentals ungrare flyr samma natt.</div>
+      <span class="timeline-tag tag-migration">Migration</span>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">Jan–mars 1957</div>
+      <div class="timeline-title">Flyktingläger vid Adriatiska havet</div>
+      <div class="timeline-desc">Palitce/Gerovo i bergen — ett gammalt tyskt koncentrationsläger med 1 200 ungerska flyktingar. Knapp mat, oljefat för värme.</div>
+      <span class="timeline-tag tag-migration">Migration</span>
+    </div>
+
+    <div class="timeline-event major">
+      <div class="timeline-year">Mars 1957</div>
+      <div class="timeline-title">Svenska Röda Korset anländer</div>
+      <div class="timeline-desc">250 av 1 200 väljs ut baserat på yrkesutbildning. Laszlo blir utvald. Transport ner till kusten, hotell, chartrat tåg genom Österrike och Tyskland.</div>
+      <span class="timeline-tag tag-migration">Migration</span>
+    </div>
+
+    <div class="timeline-event major">
+      <div class="timeline-year">Mars 1957</div>
+      <div class="timeline-title">Ankomst till Sverige — Malmö</div>
+      <div class="timeline-desc">Laszlo anländer till Malmö. Placeras i Öregrund, sedan Norrtälje. Börjar arbeta på ett gjuteri som tillverkar spisplattor och strykjärn. Fem ungrare på samma fabrik.</div>
+      <span class="timeline-tag tag-migration">Migration</span>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">16 april 1969</div>
+      <div class="timeline-title">Lars Göran Schiffer föds</div>
+      <div class="timeline-desc">Thomas äldre bror.</div>
+      <span class="timeline-tag tag-family">Familj</span>
+    </div>
+
+    <div class="timeline-event major">
+      <div class="timeline-year">27 juli 1972</div>
+      <div class="timeline-title">Thomas Schiffer föds i Linköping</div>
+      <div class="timeline-desc">Tredje generationen i Sverige.</div>
+      <span class="timeline-tag tag-family">Familj</span>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">Maj 1994</div>
+      <div class="timeline-title">Ference Kiss (Ferri) dör</div>
+      <div class="timeline-desc">Laszlos bror, ca 56 år. Hade arbetat vid urangruvan utanför Pécs och kört uranmaterial till järnvägen. Troligen sjuk av strålning.</div>
+      <span class="timeline-tag tag-family">Familj</span>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">1995–1996</div>
+      <div class="timeline-title">Flera familjemedlemmar går bort</div>
+      <div class="timeline-desc">Farmor Maria Kiss (juni 1995), Ilonka (okt 1995). Morbror Julius (Gyula Kiss) dör den 6 januari 1997 — bekräftat av ungerska arvsskattedokument. Hans dödsbo innehåller fastigheter i Budapest. Laszlo ärvde halva dödsboet och fick ett arvsskattekrav på HUF 202 256.</div>
+      <span class="timeline-tag tag-family">Familj</span>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">2003–2008</div>
+      <div class="timeline-title">Thomas döttrar föds</div>
+      <div class="timeline-desc">Anna Karin (2003) och Sara (2008, Lund). Femte generationen sedan farfars far.</div>
+      <span class="timeline-tag tag-family">Familj</span>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">1998</div>
+      <div class="timeline-title">Szava Klára testamenterar Siklós-lägenheten till Laszlo</div>
+      <div class="timeline-desc">Den 28 april upprättar Szava Klára (f. 1942), Laszlos partner i Siklós, ett testamente där hon ger sin 39 m² lägenhet på Iskola u. 22/B till Laszlo. Hennes döttrar Edit och Ágnes Todenbier undertecknar och godtar testamentet. Samma år behandlas Laszlos namnbyte av ungerska Belügyminisztérium (dec 1998).</div>
+      <span class="timeline-tag tag-hungary">Ungern</span>
+    </div>
+
+    <div class="timeline-event">
+      <div class="timeline-year">1999</div>
+      <div class="timeline-title">Inkasso för Julius arvsskatt</div>
+      <div class="timeline-desc">Det ungerska inkassobolaget Sigma Company Ltd. kräver SEK 7 294 (HUF 202 256) av Laszlo i Helsingborg — arvsskatt efter Julius (Gyula Kiss) dödsbo. Oklart om skulden betalades.</div>
+      <span class="timeline-tag tag-hungary">Ungern</span>
+    </div>
+
+    <div class="timeline-event major">
+      <div class="timeline-year">2011</div>
+      <div class="timeline-title">Laszlo György Schiffer dör i Helsingborg</div>
+      <div class="timeline-desc">Thomas far går bort vid ca 78 års ålder. Från revolutionär i Budapest till ett nytt liv i Sverige. Hans arvsrätt till Siklós-lägenheten övergår nu till sönerna Thomas och Lars.</div>
+      <span class="timeline-tag tag-family">Familj</span>
+    </div>
+  </div>
+</div>
+
+<!-- FLIGHT ROUTE -->
+<div id="route" class="view">
+  <h2 class="section-title">Flyktvägen — Januari–Mars 1957</h2>
+  <p style="color:var(--muted); margin-bottom:2rem; font-size:0.9rem;">Laszlo György Schiffers resa från Budapest till Sverige</p>
+
+  <div class="route-visual">
+    <div class="route-stop">
+      <div class="route-dot" style="background:var(--hungary);">1</div>
+      <div class="place">Budapest</div>
+      <div class="detail">Csepel, 21:a distriktet</div>
+      <div class="detail" style="font-style:italic;">13 jan 1957</div>
+    </div>
+    <div class="route-arrow">&#8594;</div>
+    <div class="route-stop">
+      <div class="route-dot" style="background:var(--hungary);">2</div>
+      <div class="place">Pécs</div>
+      <div class="detail">Tåg via S:t Elisabeth</div>
+    </div>
+    <div class="route-arrow">&#8594;</div>
+    <div class="route-stop">
+      <div class="route-dot" style="background:#7b4a8e;">3</div>
+      <div class="place">Subotica</div>
+      <div class="detail">Jugoslaviska gränsen</div>
+      <div class="detail" style="font-style:italic;">Till fots över pusztan</div>
+    </div>
+    <div class="route-arrow">&#8594;</div>
+    <div class="route-stop">
+      <div class="route-dot" style="background:#7b4a8e;">4</div>
+      <div class="place">Palitce / Gerovo</div>
+      <div class="detail">Flyktingläger i bergen</div>
+      <div class="detail" style="font-style:italic;">~6 veckor</div>
+    </div>
+    <div class="route-arrow">&#8594;</div>
+    <div class="route-stop">
+      <div class="route-dot" style="background:#7b4a8e;">5</div>
+      <div class="place">Rijeka</div>
+      <div class="detail">Hotell vid kusten</div>
+      <div class="detail" style="font-style:italic;">Röda Korset</div>
+    </div>
+    <div class="route-arrow">&#8594;</div>
+    <div class="route-stop">
+      <div class="route-dot" style="background:#555;">6</div>
+      <div class="place">Österrike</div>
+      <div class="detail">Chartrat tåg</div>
+    </div>
+    <div class="route-arrow">&#8594;</div>
+    <div class="route-stop">
+      <div class="route-dot" style="background:#555;">7</div>
+      <div class="place">Tyskland</div>
+      <div class="detail">Coca-Cola vid stationerna</div>
+    </div>
+    <div class="route-arrow">&#8594;</div>
+    <div class="route-stop">
+      <div class="route-dot" style="background:var(--sweden);">8</div>
+      <div class="place">Malmö</div>
+      <div class="detail">Ankomst Sverige</div>
+      <div class="detail" style="font-style:italic;">Mars 1957</div>
+    </div>
+    <div class="route-arrow">&#8594;</div>
+    <div class="route-stop">
+      <div class="route-dot" style="background:var(--sweden);">9</div>
+      <div class="place">Öregrund</div>
+      <div class="detail">Stadshotellet</div>
+    </div>
+    <div class="route-arrow">&#8594;</div>
+    <div class="route-stop">
+      <div class="route-dot" style="background:var(--sweden);">10</div>
+      <div class="place">Norrtälje</div>
+      <div class="detail">Gjuteriet, 3 år</div>
+    </div>
+  </div>
+
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:2rem; margin-top:2rem; max-width:800px; margin-left:auto; margin-right:auto;">
+    <h3 style="font-family:'Playfair Display',serif; margin-bottom:1rem;">Detaljer om flykten</h3>
+    <div style="font-size:0.92rem; line-height:1.8; color:#444;">
+      <p style="margin-bottom:0.75rem;">Västgränsen mot Österrike var stängd efter att 250 000 ungrare redan flytt. Laszlo valde istället den sydliga vägen mot Jugoslavien tillsammans med två rumskamrater från arbetarhotellet.</p>
+      <p style="margin-bottom:0.75rem;">De hoppade på tåget vid Pest-stationen S:t Elisabeth. Vid varje station hoppade de av på "icke-perrongsidan" och stod på rälsen tills tåget rullade igen. Nära gränsen hoppade de av och gick till fots.</p>
+      <p style="margin-bottom:0.75rem;">Flyktinglägret Palitce/Gerovo var ett ombyggt tyskt koncentrationsläger med 1 200 ungerska flyktingar. Maten räckte precis för att inte svälta. USA betalade för mat men Tito stoppade pengarna i egen ficka, enligt Laszlo.</p>
+      <p>Svenska Röda Korset valde ut 250 personer baserat på yrkesutbildning. Laszlo var en av dem.</p>
+    </div>
+  </div>
+</div>
+
+<!-- GAPS -->
+<div id="gaps" class="view">
+  <h2 class="section-title">Att utforska vidare</h2>
+  <p style="color:var(--muted); margin-bottom:2rem; font-size:0.9rem;">Kunskapsluckor och forskningsförslag</p>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap:1rem;">
+    <div class="gap-card">
+      <h4>Farfar György Schiffer</h4>
+      <p>Inget exakt födelse- eller dödsdatum. Registrerad som "Okänd Schiffer" i MyHeritage. Var vagnmakare — kan finnas i skråregister eller yrkesföreningsarkiv i Pécs/Baranya.</p>
+    </div>
+
+    <div class="gap-card">
+      <h4>Ferences födelsedatum</h4>
+      <p>MyHeritage anger 1936, dokumentet anger augusti 1938. Ungerska civilregistret (anyakönyv) i Pécs bör kunna verifiera. Efternamnet "Kiss" (moderns) tyder på att han, liksom Laszlo, föddes utanför äktenskapet.</p>
+    </div>
+
+    <div class="gap-card">
+      <h4>Åse Karin Webers bakgrund</h4>
+      <p>Född i Trondheim 1944 — norsk bakgrund. Hennes föräldrar finns som "Aase" och "Okänd Schiffer" (troligen felaktigt) i MyHeritage. Digitalarkivet (Norge) bör ha kyrkoböcker från Trondheim.</p>
+    </div>
+
+    <div class="gap-card">
+      <h4>Den tyske soldaten Weber — vem var han?</h4>
+      <p>Efternamnet Weber, från Dresden. Försvann i rysk fångenskap i norra Norge ~1945. Tyska krigsarkiv (Bundesarchiv-Militärarchiv, Freiburg) och ryska krigsfångenskapsdatabaser kan ha uppgifter. Projektet "Krigsbarn" vid Nasjonalbiblioteket i Norge är också en resurs. Hans förnamn är den saknade nyckeln.</p>
+    </div>
+    <div class="gap-card">
+      <h4>Mormorns föräldrar och ursprung</h4>
+      <p>Aase Cecilie Strømsem (f. Sand), född ~1924 i Trondheim-området. Hennes systrar var Helga Marie Rønning (f. Sand) och Turid (f. Sand). Faderns och moderns namn är okända — Digitalarkivet (digitalarkivet.no) folkräkningar 1910/1920 och norska kyrkoböcker kan ge uppgifter om familjen Sand. Turids fullständiga namn och öde är också okänt.</p>
+    </div>
+    <div class="gap-card">
+      <h4>Grinde-fadern — förnamn och data</h4>
+      <p>Okänt förnamn. Far till Leif Kristian och Georg. Norsk man som dog i hjärtattack. Leif Kristian eller Georg kan ha mer information.</p>
+    </div>
+    <div class="gap-card">
+      <h4>Norska Krigsbarnsarkiv</h4>
+      <p>Norges Riksarkiv har dokumentation om krigsbarn. Åse Karin Weber borde finnas i dessa register. Kontakt via riksarkivet.no eller organisationen "Norges Krigsbarnforbund".</p>
+    </div>
+
+    <div class="gap-card" style="border-left:4px solid #e67e22;">
+      <h4>⚖️ Lägenheten i Siklós — pågående ärende</h4>
+      <p>Szava Klára (f. 1942) testamenterade 1998 en 39 m² lägenhet på Iskola u. 22/B i Siklós till Laszlo Schiffer. Sedan Laszlo dog 2011 är Thomas och Lars de rättmätiga arvingarna. Klára bor fortfarande i lägenheten. Döttrarna dr. Todenbier Ágnes och Selymesné Todenbier Edit har undertecknat och godtar testamentet. Nästa steg: samla svenska arvsdokument, kontakta ungersk advokat i Baranya-regionen, inleda hagyatéki eljárás (arvsskifte).</p>
+    </div>
+
+    <div class="gap-card">
+      <h4>Bouppteckningen december 2016</h4>
+      <p>Behöver läsas manuellt. Bör innehålla: Åses fullständiga namn, personnummer, dödsbodelägare, eventuellt syskon och adresser.</p>
+    </div>
+
+    <div class="gap-card">
+      <h4>Laszlo och Åses giftermål</h4>
+      <p>Var och när gifte de sig? Var det i Sverige? Vigselbevis från Helsingborg eller Linköping?</p>
+    </div>
+
+    <div class="gap-card">
+      <h4>Laszlos ankomst till Sverige</h4>
+      <p>Röda Korsets arkiv och Migrationsverket bör ha dokumentation. Vilka av de 250 i kontingenten finns registrerade?</p>
+    </div>
+
+    <div class="gap-card">
+      <h4>DNA-matchningarna</h4>
+      <p>9 077 DNA-matchningar i MyHeritage. Har du utforskat dessa? De kan avslöja okända släktgrenar, speciellt på den ungerska sidan.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+const personData = {
+  laszlo: {
+    name: 'Laszlo György Schiffer',
+    born: '27 december 1933, Pécs, Ungern',
+    died: '2011, Helsingborg, Sverige (~78 år)',
+    role: 'Thomas far',
+    story: 'Laszlo föddes i Pécs i södra Ungern som son till vagnmakaren György Schiffer och Maria Kiss. Föräldrarna gifte sig aldrig på grund av kulturella skillnader — farfar var schwab (tyskt yrkesfolk) medan farmor var ungerska. De bodde hos farmors föräldrar i Királyegyháza. 1949 tog morbror Julius den 16-årige Laszlo till Budapest för yrkesutbildning; Laszlo bodde med Julius och hans dåvarande fru Maria. Han jobbade i en stor fabrik på Csepelön som tillverkade svarvar och fräsmaskiner — 30 stycken i månaden, samtliga skickade till Ryssland som krigsskadestånd. Han gjorde militärtjänst 1953–55 och deltog aktivt i den ungerska revolutionen 1956 — bland annat kastade han molotovcocktails på ryska tanks. Angiven av någon och eftersökt flydde han den 13 januari 1957, via tåg till den jugoslaviska gränsen (hoppar av på rälsen vid varje station), till Palitce/Gerovo-lägret i bergen, och slutligen med Svenska Röda Korsets första transport — 250 utvalda — via Škrivenica och ett chartrat tåg genom Österrike och Tyskland till Malmö. I Sverige hamnade han i Öregrund och sedan Norrtälje, där han bodde tre år och jobbade på ett gjuteri som tillverkade spishällar och strykjärn — tillsammans med fem andra ungrare. Hans vänner från den tiden: Mischa (kvar i Norrtälje), Ferri Scaz (Karlstad), Ferri Vass (Stockholm). Han bodde senare i Helsingborg (Carl Krooks Gata 57) och hade en relation med Szava Klára i Siklós. Hon testamenterade 1998 sin lägenhet till honom — ett arv som nu tillfaller Thomas och Lars.'
+  },
+  szava_klara: {
+    name: 'Szava Klára',
+    born: '8 juli 1942, Siklósnagyfalu, Ungern',
+    died: 'Lever (bor i Siklós ~2026)',
+    role: 'Laszlos partner i Ungern',
+    story: 'Szava Klára (gift Todenbier László Nándorné, dotter till Julianna Döre) hade en relation med Laszlo Schiffer under en period. Den 28 april 1998 upprättade hon ett testamente i Siklós där hon testamenterade sin 39 m² lägenhet på Iskola u. 22/B uteslutande till Laszlo. Hennes egna döttrar — Edit och Ágnes Todenbier — har undertecknat och godtar testamentet. Klára bodde 1998 på Széchenyi u. 9 i Siklós och bor sannolikt fortfarande i den testamenterade lägenheten. Sedan Laszlo avled 2011 är Thomas och Lars hans rättmätiga arvingar till lägenheten.'
+  },
+  ase: {
+    name: 'Åse Karin Schiffer (f. Sand / Weber)',
+    born: '8 september 1944, Trondheim, Norge',
+    died: 'Helsingborg, Sverige (bouppteckning dec 2016)',
+    role: 'Thomas mor · Kriegskind / Tysketøs',
+    story: 'Åse Karin föddes som krigsbarn — dotter till Aase Cecilie Sand och den tyske soldaten Weber från Dresden. I efterkrigstigets Norge bar dessa barn ett tungt stigma och kallades nedsättande "tysketøs" eller "tyskeunge". Hennes mors andre man (Grinde-fadern) vägrade ha henne hemma och var våldsam mot familjen. Åse gick därför under mellannamnet "Karin" när familjen besökte Trondheim, för att undvika att förknippas med det tyska efternamnet Weber. Hennes biologiske far tillfångatogs av ryska styrkor i norra Norge mot krigets slut och försvann spårlöst. Åse emigrerade senare till Sverige, träffade den ungerske flyktingen Laszlo Schiffer, gifte sig och tog namnet Schiffer. De fick tre barn: Lars Göran (1969), Thomas (1972) och ett till.'
+  },
+  ase_sand: {
+    name: 'Aase Cecilie Strømsem (f. Sand)',
+    born: '~1924, Trondheim, Norge',
+    died: 'Maj 2010, begravd torsdag 6 maj 2010',
+    role: 'Mormor',
+    story: 'Thomas mormor hette Aase Cecilie Sand och växte upp i centrala Trondheim. Hon hade två systrar: Helga Marie (gift Rønning) och Turid. Under den tyska ockupationen fick hon dottern Åse Karin med soldaten Weber från Dresden 1944. I efterkrigstiden fick hon ytterligare barn med en norsk man vid namn Grinde (Leif Kristian och Georg), men den mannen vägrade acceptera Åse Karin i hemmet och var våldsam. Slutligen mötte hon Odd Strømsem, brevbärare och omtyckt av alla, med vilken hon fick Jarle och tog efternamnet Strømsem.'
+  },
+  weber_soldat: {
+    name: 'Okänd Weber (tysk soldat)',
+    born: 'Okänt födelseår, Dresden, Tyskland',
+    died: 'Okänt — försvann i rysk fångenskap, norra Norge',
+    role: 'Åses biologiske far',
+    story: 'En tysk soldat med efternamnet Weber, ursprungligen från Dresden, som stationerades i det ockuperade Norge 1940–45. Hans familj ägde en slakteriaffär i Dresden — en hantverk- och handelsfamilj i en av Sachsens viktigaste städer. Fick ett barn med Åse Sand i Trondheim — Åse Karin, född 8 september 1944. Mot krigets slut förflyttades han till norra Norge, tillfångatogs av ryska styrkor och försvann spårlöst. Hans förnamn är okänt. Dresden förstördes i den allierande bombningen i februari 1945; en stor del av befolkningen omkom eller flydde. Familjens slaktarbutik kan ha gett spår i handelsregister och adressböcker. Tyska krigsarkiv (Bundesarchiv-Militärarchiv, Freiburg) och ryska krigsfångenskapsdatabaser (OBD-Memorial) kan ge mer information om hans öde.'
+  },
+  grinde_far: {
+    name: 'Okänd Grinde',
+    born: 'Okänt, Norge',
+    died: 'Hjärtattack (datum okänt)',
+    role: 'Far till Leif Kristian och Georg Grinde',
+    story: 'En norsk man vid namn Grinde som hade en relation med mormor Åse Sand och fick två söner med henne: Leif Kristian och Georg (f. 1948). Han vägrade acceptera Åse Karins närvaro i hemmet — han kallade henne "tysketøs" och var våldsam i hemmet. Dog sedermera i en hjärtattack. Hans förnamn är okänt.'
+  },
+  odd: {
+    name: 'Odd Strømsem',
+    born: 'Okänt, Norge',
+    died: 'Okänt',
+    role: 'Mormorns siste man · Far till Jarle Strømsem',
+    story: 'Odd Strømsem var brevbärare och omtyckt av alla som kände honom. Han träffade Åse Sand och fick sonen Jarle med henne. Åse tog hans efternamn och blev Åse Strømsem. Thomas minns att Odd var en positiv och uppskattad person i familjen — en kontrast till den våldsamma Grinde-fadern.'
+  },
+  leif: {
+    name: 'Leif Kristian Grinde',
+    born: 'Okänt födelseår, Norge',
+    died: '—',
+    role: 'Morbror · Åse Karins halvbror (Grinde-sidan)',
+    story: 'Leif Kristian Grinde är Åse Karins halvbror på morssidan — de delar mormor Åse Sand men har olika fäder. Hans tre barn är Tone Grinde, Mikael Grinde och Knut Grinde. Tones barn heter Erika Grinde Kristiansen och Odin Grinde Kristiansen. Barnbarnet Mia Grinde är troligen Knut eller Mikaels dotter, liksom Heather Cameron. Emil är ett annat barnbarn. Even Bohlin Nordgård listas som kusin till Tone.'
+  },
+  georg: {
+    name: 'Georg Grinde',
+    born: '1948, Norge',
+    died: '—',
+    role: 'Morbror · Åse Karins halvbror (Grinde-sidan)',
+    story: 'Georg Grinde är Åse Karins halvbror — de delar mormor Åse Sand men Georg har fadern Grinde, Åse Karin hade den tyske soldaten Weber. Registrerad i MyHeritage sedan tidigare. Har barnen Stig Roar och Espen.'
+  },
+  jarle: {
+    name: 'Jarle Strømsem',
+    born: 'Okänt födelseår, Norge',
+    died: '—',
+    role: 'Morbror · Åse Karins halvbror (Strømsem-sidan)',
+    story: 'Jarle Strømsem är Åse Karins halvbror — de delar mormor Åse Sand, men Jarle har fadern Odd Strømsem. Skild, hans ex-fru heter Elisabeth Lyshaug. Har barnen Tommy, Kenneth (f. 1992) och Ida (f. 1998).'
+  },
+  tone: {
+    name: 'Tone Grinde',
+    born: 'Okänt födelseår, Norge',
+    died: '—',
+    role: 'Kusin · Leif Kristian Grindes dotter',
+    story: 'Tone Grinde är Thomas kusin via morbror Leif Kristian Grinde. Hon har bröderna Mikael Grinde och Knut Grinde. Tones egna barn heter Erika Grinde Kristiansen och Odin Grinde Kristiansen. Hennes syskonbarn inkluderar Mia Grinde och Heather Cameron (Knut eller Mikaels barn). Even Bohlin Nordgård listas som Tones kusin.'
+  },
+  tommy: {
+    name: 'Tommy Strømsem',
+    born: 'Okänt födelseår',
+    died: '—',
+    role: 'Kusin · Jarle Strømsems son',
+    story: 'Tommy Strømsem är Thomas kusin via morbror Jarle Strømsem.'
+  },
+  gyorgy1: {
+    name: 'György Schiffer (äldre)',
+    born: 'Okänt, Mörs, Ruhrområdet, Tyskland',
+    died: 'Under första världskriget (förlorade ett ben)',
+    role: 'Farfars far (Thomas farfars far)',
+    story: 'Den äldsta kända personen i Schiffer-grenen. Född i Mörs i Ruhrområdet i Tyskland. Var schwab — en del av den tyska yrkesbefolkningen som invandrade till Ungern. Dog i första världskriget efter att ha förlorat ett ben. Hans hustru Susanna Horesni dog senare i Rastadt nära Baden-Baden.'
+  },
+  gyorgy2: {
+    name: 'György Schiffer (farfar)',
+    born: 'Okänt födelseår',
+    died: 'Okänt',
+    role: 'Thomas farfar',
+    story: 'Vagnmakare och schwab (tyskt yrkesfolk). Hade en relation med Maria Kiss men de gifte sig aldrig på grund av kulturella skillnader. Fick två söner: Laszlo (1933) och Ference (1936/1938). Gifte sig senare med änkan Julia från Királyegyháza och flyttade till Harkány. Laszlo besökte honom julen 1956, strax innan flykten.'
+  },
+  maria_kiss: {
+    name: 'Maria Kiss',
+    born: '1911, S:t Ivan (= Királyegyháza), Ungern',
+    died: 'Juni 1995',
+    role: 'Thomas farmor',
+    story: 'Född 1911 i S:t Ivan — byn bytte namn till Királyegyháza ("Kungens första hus") när den slogs samman med grannbyn S:t Gál under 1930-talet. Marias föräldrar bodde i S:t Gál. Hade aldrig äktenskap med György Schiffer trots att de fick två söner; kulturkrocken mellan schwabisk och ungersk kultur var för stor. Flyttade med Laszlo och Ference till sina egna föräldrar. Dog i juni 1995, ett år efter sin son Ference.'
+  },
+  ference: {
+    name: 'Ference Kiss (Ferri)',
+    born: 'Augusti 1938, Királyegyháza',
+    died: 'Maj 1994',
+    role: 'Thomas farbror',
+    story: 'Laszlos lillebror, också född utanför äktenskapet (har moderns efternamn Kiss). Familjedokumentet bekräftar födelseåret 1938, i augusti. Jobbade vid en urangruva utanför Pécs och körde lastbilar med uranmaterial från gruvorna till järnvägen för vidare transport till Ryssland. Jobbade även med vinodling hos farfar György. Halva av farfars mark i Harkány köptes av tyskar som byggde ett hotel. Laszlo trodde att Ferri fick en åkomma av uranet — han dog vid ca 56 års ålder av vad som troligen var en blodpropp vid ljumskarna, efter lång sjukskrivning.'
+  },
+  julia: {
+    name: 'Julia',
+    born: 'Királyegyháza, Ungern',
+    died: 'Okänt',
+    role: 'Farfars andra fru',
+    story: 'Änka som gifte sig med farfar György. Också från Királyegyháza. De flyttade till Harkány, där Laszlo besökte dem julen 1956.'
+  },
+  julius: {
+    name: 'Julius (Gyula) Kiss',
+    born: 'Okänt',
+    died: '6 januari 1997, Budapest (officiell skattehandling; familjhistoria anger 1996)',
+    role: 'Laszlos morbror — yrkesmilitär, sedan fabriksarbetare',
+    story: 'Laszlos morbror och en av de viktigaste personerna i hans tidiga liv. Julius var yrkesmilitär — högrest och lite stel enligt Laszlo. Han jobbade som inköpschef på en befälsskola i Transsylvanien. När ryssarna gick in i Rumänien 1943 evakuerades skolan allt längre västerut tills Julius och hans kollegor hamnade som krigsfångar i Danmark. Han återvände till Ungern 1947 och began som fabriksarbetare i en stor fabrik — 35 000 anställda — som tillverkade nålar, kastruller och symaskindelar. Julius bodde i Budapest XXI:a distriktet vid Csepelstadion. Han gifte sig två gånger: första frun Maria (som Laszlo träffade när han kom till Budapest 1949); sedan Ilonka (vars förste man hade dött). Ilonka dog i oktober 1995. Julius dog 6 januari 1997. Det var Julius som 1949 tog den 16-årige Laszlo till Budapest för att lära sig ett yrke och gav honom det avgörande språnget. Under 1956 års revolution skyddade Julius Laszlo indirekt — när militären sökte Laszlo hos Julius varnade Julius honom, och Laszlo kunde fly. Hans dödsbo innehöll bostadsfastighet och ytterligare egendom till ca HUF 2 miljoner; Laszlo ärvde halva dödsboet och fick ett arvsskattekrav på HUF 202 256 — inkasserat av Sigma Company 1999.'
+  },
+  georg: {
+    name: 'Georg Grinde',
+    born: '1948',
+    died: '—',
+    role: 'Thomas morbror (Åses bror)',
+    story: 'Registrerad i MyHeritage. Efternamnet Grinde antyder norsk koppling. Mer information behövs.'
+  },
+  thomas: {
+    name: 'Thomas Schiffer',
+    born: '27 juli 1972, Linköping',
+    died: '—',
+    role: 'Arkivets skapare',
+    story: 'Tredje generationen Schiffer i Sverige. Två döttrar: Anna Karin (2003) och Sara (2008). Bor i Lund-området. Håller på att samla ihop familjens historia i detta arkiv.'
+  },
+  lars: {
+    name: 'Lars Göran Schiffer',
+    born: '16 april 1969',
+    died: '—',
+    role: 'Thomas bror',
+    story: 'Thomas äldre bror. Dotter: Elin Schiffer (f. 1996).'
+  },
+  susanne_s: {
+    name: 'Susanne Schiffer',
+    born: '1970',
+    died: '—',
+    role: 'Svägerska',
+    story: 'Registrerad som svägerska i MyHeritage. Hennes släkt (Eriksson/Larsson/Lindberg) är delvis kartlagd tillbaka till 1870-talet.'
+  },
+  maria_j: {
+    name: 'Maria Cecilia Jansson',
+    born: '1 oktober 1973, Lund',
+    died: '—',
+    role: 'Thomas ex-maka',
+    story: 'Registrerad i MyHeritage.'
+  },
+  susanna: {
+    name: 'Susanna Horesni',
+    born: 'Okänt',
+    died: 'Rastadt, nära Baden-Baden, Tyskland',
+    role: 'Farfars mor',
+    story: 'Gift med György Schiffer (äldre). Dog i Rastadt i närheten av Baden-Baden. Mer information behövs.'
+  },
+  hans: {
+    name: 'Hans Lindberg',
+    born: '21 januari 1873',
+    died: '28 oktober 1947',
+    role: 'Susannes mormorsfar',
+    story: 'Äldsta personen med känt födelsedatum i trädet. Född 1873.'
+  }
+};
+
+function showPerson(id) {
+  const p = personData[id];
+  if (!p) return;
+  const el = document.getElementById('person-detail');
+  el.innerHTML = `
+    <h3>${p.name}</h3>
+    <div class="meta">${p.role}</div>
+    <dl class="detail-grid">
+      <dt>Född</dt><dd>${p.born}</dd>
+      <dt>Död</dt><dd>${p.died}</dd>
+    </dl>
+    <div class="story">${p.story}</div>
+  `;
+  el.classList.add('visible');
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  document.querySelectorAll('.person-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+</script>
+</body>
+</html>
