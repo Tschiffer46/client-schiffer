@@ -17,6 +17,8 @@ export default function Familjearkiv() {
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<'arkiv' | 'plan'>('arkiv')
+  const [arkivBlobUrl, setArkivBlobUrl] = useState<string | null>(null)
+  const [planBlobUrl, setPlanBlobUrl] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -28,6 +30,51 @@ export default function Familjearkiv() {
   useEffect(() => {
     if (!authed) {
       setTimeout(() => inputRef.current?.focus(), 100)
+    }
+  }, [authed])
+
+  // Once authenticated, fetch the files and create blob URLs
+  // This bypasses any X-Frame-Options headers on the server
+  useEffect(() => {
+    if (!authed) return
+
+    fetch('/familjearkiv.html')
+      .then(r => r.text())
+      .then(html => {
+        const blob = new Blob([html], { type: 'text/html' })
+        setArkivBlobUrl(URL.createObjectURL(blob))
+      })
+
+    fetch('/familjearkiv-plan.md')
+      .then(r => r.text())
+      .then(md => {
+        // Wrap plain markdown in a minimal styled HTML page
+        const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+              max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem;
+              color: #292524; line-height: 1.7; font-size: 15px; }
+            h1 { font-size: 1.6rem; color: #1c1917; margin-top: 2rem; }
+            h2 { font-size: 1.2rem; color: #1c1917; margin-top: 1.8rem; border-bottom: 1px solid #e7e5e4; padding-bottom: .4rem; }
+            h3 { font-size: 1rem; color: #44403c; margin-top: 1.2rem; }
+            table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+            th, td { border: 1px solid #d6d3d1; padding: .5rem .75rem; text-align: left; }
+            th { background: #f5f5f4; font-weight: 600; }
+            code { background: #f5f5f4; padding: .1em .35em; border-radius: 3px; font-size: .88em; }
+            pre { background: #f5f5f4; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+            pre code { background: none; padding: 0; }
+            blockquote { border-left: 3px solid #5B8DB8; margin: 0; padding-left: 1rem; color: #57534e; }
+            a { color: #5B8DB8; }
+            hr { border: none; border-top: 1px solid #e7e5e4; margin: 1.5rem 0; }
+          </style>
+          </head><body><pre style="white-space:pre-wrap;font-family:inherit">${md.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></body></html>`
+        const blob = new Blob([html], { type: 'text/html' })
+        setPlanBlobUrl(URL.createObjectURL(blob))
+      })
+
+    return () => {
+      if (arkivBlobUrl) URL.revokeObjectURL(arkivBlobUrl)
+      if (planBlobUrl) URL.revokeObjectURL(planBlobUrl)
     }
   }, [authed])
 
@@ -51,12 +98,16 @@ export default function Familjearkiv() {
     setAuthed(false)
     setPassword('')
     setError(false)
+    if (arkivBlobUrl) URL.revokeObjectURL(arkivBlobUrl)
+    if (planBlobUrl) URL.revokeObjectURL(planBlobUrl)
+    setArkivBlobUrl(null)
+    setPlanBlobUrl(null)
   }
 
   if (authed) {
     return (
       <div className="flex flex-col" style={{ height: 'calc(100vh - 3.5rem)' }}>
-        {/* Thin top bar with tabs and logout */}
+        {/* Thin top bar */}
         <div className="flex items-center justify-between border-b border-stone-200 bg-white px-4 h-10 shrink-0">
           <div className="flex gap-1">
             <button
@@ -97,19 +148,15 @@ export default function Familjearkiv() {
           </div>
         </div>
 
-        {/* Content area */}
+        {/* Content */}
         {activeTab === 'arkiv' ? (
-          <iframe
-            src="/familjearkiv.html"
-            className="flex-1 w-full border-0"
-            title="Interaktivt familjearkiv — Familjerna Schiffer"
-          />
+          arkivBlobUrl
+            ? <iframe src={arkivBlobUrl} className="flex-1 w-full border-0" title="Interaktivt familjearkiv" />
+            : <div className="flex-1 flex items-center justify-center text-stone-400 text-sm">Laddar arkiv…</div>
         ) : (
-          <iframe
-            src="/familjearkiv-plan.md"
-            className="flex-1 w-full border-0"
-            title="Forskningsplan — Familjerna Schiffer"
-          />
+          planBlobUrl
+            ? <iframe src={planBlobUrl} className="flex-1 w-full border-0" title="Forskningsplan" />
+            : <div className="flex-1 flex items-center justify-center text-stone-400 text-sm">Laddar plan…</div>
         )}
       </div>
     )
@@ -119,13 +166,10 @@ export default function Familjearkiv() {
   return (
     <div className="min-h-[calc(100vh-7rem)] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        {/* Lock icon */}
         <div className="flex justify-center mb-6">
           <div className="w-14 h-14 rounded-full bg-stone-100 flex items-center justify-center">
-            <svg
-              width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="#5B8DB8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
-            >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="#5B8DB8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
@@ -162,9 +206,7 @@ export default function Familjearkiv() {
               autoComplete="current-password"
             />
             {error && (
-              <p className="mt-2 text-xs text-red-500">
-                Fel lösenord. Försök igen.
-              </p>
+              <p className="mt-2 text-xs text-red-500">Fel lösenord. Försök igen.</p>
             )}
           </div>
 
