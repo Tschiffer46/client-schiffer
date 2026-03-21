@@ -10,6 +10,7 @@ export interface Person {
   generation: number
   branch: 'father' | 'mother' | 'thomas' | 'cousins-no' | 'children' | 'in-law'
   story: string
+  events?: { year: string; text: string }[]
 }
 
 export interface TimelineEvent {
@@ -26,6 +27,8 @@ export interface RouteStop {
   detail: string
   date?: string
   color: string
+  lat?: number
+  lng?: number
 }
 
 export interface ResearchGap {
@@ -108,11 +111,11 @@ export const persons: Person[] = [
     name: 'Aase Cecilie Strømsem (f. Sand)',
     born: '~1924, Trondheim, Norge',
     died: 'Maj 2010, begravd 6 maj 2010',
-    role: 'Mormor — 3 relationer, 4 barn',
+    role: 'Vår mormor — 3 relationer, 4 barn',
     country: 'no',
     generation: 2,
     branch: 'mother',
-    story: 'Thomas mormor hette Aase Cecilie Sand och växte upp i centrala Trondheim. Hon hade två systrar: Helga Marie (gift Rønning) och Turid. Under den tyska ockupationen fick hon dottern Åse Karin med soldaten Weber från Dresden 1944. I efterkrigstiden fick hon ytterligare barn med en norsk man vid namn Grinde (Leif Kristian och Georg), men den mannen vägrade acceptera Åse Karin i hemmet och var våldsam. Slutligen mötte hon Odd Strømsem, brevbärare och omtyckt av alla, med vilken hon fick Jarle och tog efternamnet Strømsem.',
+    story: 'Vår mormor hette Aase Cecilie Sand och växte upp i centrala Trondheim. Hon hade två systrar: Helga Marie (gift Rønning) och Turid. Under den tyska ockupationen fick hon dottern Åse Karin med soldaten Weber från Dresden 1944. I efterkrigstiden fick hon ytterligare barn med en norsk man vid namn Grinde (Leif Kristian och Georg), men den mannen vägrade acceptera Åse Karin i hemmet och var våldsam. Slutligen mötte hon Odd Strømsem, brevbärare och omtyckt av alla, med vilken hon fick Jarle och tog efternamnet Strømsem.',
   },
   {
     id: 'weber_soldat',
@@ -145,7 +148,7 @@ export const persons: Person[] = [
     country: 'no',
     generation: 2,
     branch: 'mother',
-    story: 'Odd Strømsem var brevbärare och omtyckt av alla som kände honom. Han träffade Åse Sand och fick sonen Jarle med henne. Åse tog hans efternamn och blev Åse Strømsem. Thomas minns att Odd var en positiv och uppskattad person i familjen — en kontrast till den våldsamma Grinde-fadern.',
+    story: 'Odd Strømsem var brevbärare och omtyckt av alla som kände honom. Han träffade Åse Sand och fick sonen Jarle med henne. Åse tog hans efternamn och blev Åse Strømsem. Vi minns att Odd var en positiv och uppskattad person i familjen — en kontrast till den våldsamma Grinde-fadern.',
   },
   // GENERATION 3
   {
@@ -153,22 +156,49 @@ export const persons: Person[] = [
     name: 'Laszlo György Schiffer',
     born: '27 dec 1933, Pécs, Ungern',
     died: '2011, Helsingborg (~78 år)',
-    role: 'Far',
+    role: 'Vår far',
     country: 'hu',
     generation: 3,
     branch: 'father',
-    story: 'Laszlo föddes i Pécs i södra Ungern som son till vagnmakaren György Schiffer och Maria Kiss. Föräldrarna gifte sig aldrig på grund av kulturella skillnader — farfar var schwab (tyskt yrkesfolk) medan farmor var ungerska. De bodde hos farmors föräldrar i Királyegyháza. 1949 tog morbror Julius den 16-årige Laszlo till Budapest för yrkesutbildning; Laszlo bodde med Julius och hans dåvarande fru Maria. Han jobbade i en stor fabrik på Csepelön som tillverkade svarvar och fräsmaskiner — 30 stycken i månaden, samtliga skickade till Ryssland som krigsskadestånd. Han gjorde militärtjänst 1953–55 och deltog aktivt i den ungerska revolutionen 1956 — bland annat kastade han molotovcocktails på ryska tanks. Angiven av någon och eftersökt flydde han den 13 januari 1957, via tåg till den jugoslaviska gränsen, till Palitce/Gerovo-lägret i bergen, och slutligen med Svenska Röda Korsets första transport — 250 utvalda — via Škrivenica och ett chartrat tåg genom Österrike och Tyskland till Malmö. I Sverige hamnade han i Öregrund och sedan Norrtälje, där han bodde tre år och jobbade på ett gjuteri.',
+    story: 'Vår far Laszlo föddes i Pécs i södra Ungern som son till vagnmakaren György Schiffer och Maria Kiss. Föräldrarna gifte sig aldrig på grund av kulturella skillnader — farfar var schwab (tyskt yrkesfolk) medan farmor var ungerska. De bodde hos farmors föräldrar i Királyegyháza. 1949 tog morbror Julius den 16-årige Laszlo till Budapest för yrkesutbildning; Laszlo bodde med Julius och hans dåvarande fru Maria. Han jobbade i en stor fabrik på Csepelön som tillverkade svarvar och fräsmaskiner — 30 stycken i månaden, samtliga skickade till Ryssland som krigsskadestånd. Han gjorde militärtjänst 1953–55 och deltog aktivt i den ungerska revolutionen 1956 — bland annat kastade han molotovcocktails på ryska tanks. Angiven av någon och eftersökt flydde han den 13 januari 1957, via tåg till den jugoslaviska gränsen, till Palitce/Gerovo-lägret i bergen, och slutligen med Svenska Röda Korsets första transport — 250 utvalda — via Škrivenica och ett chartrat tåg genom Österrike och Tyskland till Malmö. I Sverige hamnade han i Öregrund och sedan Norrtälje, där han bodde tre år och jobbade på ett gjuteri.',
+    events: [
+      { year: '27 dec 1933', text: 'Född i Pécs, Ungern' },
+      { year: '1949', text: 'Flyttade till Budapest för yrkesutbildning' },
+      { year: '1953–1955', text: 'Gjorde militärtjänst' },
+      { year: '23 okt 1956', text: 'Deltog i den ungerska revolutionen' },
+      { year: '13 jan 1957', text: 'Flydde Budapest' },
+      { year: 'Jan–mars 1957', text: 'Lyktingläger vid Adriatiska havet' },
+      { year: 'Mars 1957', text: 'Ankom Sverige via Malmö' },
+      { year: 'Mar 1957–1960', text: 'Öregrund och Norrtälje, arbete på gjuteri' },
+      { year: '~1960', text: 'Mötte Åse Karin i Norrköping' },
+      { year: '1969', text: 'Sonen Lars-Göran födes' },
+      { year: '1972', text: 'Sonen Thomas födes, familjen i Linköping' },
+      { year: 'Hösten 1972', text: 'Familjen flyttade till Helsingborg/Dalhem' },
+      { year: '1975', text: 'Familjen köpte hus på Jordgubbsgatan 3 i Bjuv' },
+      { year: '~mitten av 80-talet', text: 'Skilsmässa, flyttade tillbaka till Helsingborg' },
+      { year: '2011', text: 'Död i Helsingborg vid ~78 års ålder' },
+    ],
   },
   {
     id: 'ase',
     name: 'Åse Karin Schiffer (f. Weber)',
     born: '8 sep 1944, Trondheim, Norge',
     died: 'Helsingborg (bouppteckning dec 2016)',
-    role: 'Mor — Kriegskind',
+    role: 'Vår mor — Kriegskind',
     country: 'no',
     generation: 3,
     branch: 'mother',
-    story: 'Åse Karin föddes som krigsbarn — dotter till Aase Cecilie Sand och den tyske soldaten Weber från Dresden. I efterkrigstidens Norge bar dessa barn ett tungt stigma och kallades nedsättande "tysketøs" eller "tyskeunge". Hennes mors andre man (Grinde-fadern) vägrade ha henne hemma och var våldsam mot familjen. Åse gick därför under mellannamnet "Karin" när familjen besökte Trondheim, för att undvika att förknippas med det tyska efternamnet Weber. Hennes biologiske far tillfångatogs av ryska styrkor i norra Norge mot krigets slut och försvann spårlöst. Åse emigrerade senare till Sverige, träffade Laszlo Schiffer, gifte sig och tog namnet Schiffer.',
+    story: 'Vår mor Åse Karin föddes som krigsbarn — dotter till Aase Cecilie Sand och den tyske soldaten Weber från Dresden. I efterkrigstidens Norge bar dessa barn ett tungt stigma och kallades nedsättande "tysketøs" eller "tyskeunge". Hennes mors andre man (Grinde-fadern) vägrade ha henne hemma och var våldsam mot familjen. Åse gick därför under mellannamnet "Karin" när familjen besökte Trondheim, för att undvika att förknippas med det tyska efternamnet Weber. Hennes biologiske far tillfångatogs av ryska styrkor i norra Norge mot krigets slut och försvann spårlöst. Åse emigrerade senare till Sverige, träffade Laszlo Schiffer, gifte sig och tog namnet Schiffer.',
+    events: [
+      { year: '8 sep 1944', text: 'Född i Trondheim, Norge som krigsbarn' },
+      { year: '~1960', text: 'Mötte Laszlo i Norrköping' },
+      { year: '1969', text: 'Sonen Lars-Göran födes' },
+      { year: '1972', text: 'Sonen Thomas födes i Linköping' },
+      { year: 'Hösten 1972', text: 'Familjen flyttade till Helsingborg/Dalhem' },
+      { year: '1975', text: 'Familjen köpte hus på Jordgubbsgatan 3 i Bjuv' },
+      { year: '~mitten av 80-talet', text: 'Skilsmässa' },
+      { year: '~2016', text: 'Död i Helsingborg' },
+    ],
   },
   {
     id: 'ference',
@@ -225,17 +255,23 @@ export const persons: Person[] = [
     branch: 'mother',
     story: 'Jarle Strømsem är Åse Karins halvbror — de delar mormor Åse Sand, men Jarle har fadern Odd Strømsem. Skild, ex-fru Elisabeth Lyshaug. Har barnen Tommy, Kenneth (f. 1992) och Ida (f. 1998).',
   },
-  // GENERATION 4 — Thomas generation
+  // GENERATION 4 — Bröderna Schiffers generation
   {
     id: 'lars',
     name: 'Lars Göran Schiffer',
     born: '16 apr 1969',
     died: '—',
-    role: 'Bror',
+    role: 'Storebror',
     country: 'se',
     generation: 4,
     branch: 'thomas',
-    story: 'Thomas äldre bror. Dotter: Elin Schiffer (f. 1996).',
+    story: 'Storebror till Thomas. Första av bröderna Schiffer född i Sverige. Dotter: Elin Schiffer (f. 1996). Delar historien om vår fars flykt från Ungern och familjens etablering i Sverige.',
+    events: [
+      { year: '16 apr 1969', text: 'Född i Sverige' },
+      { year: '1972', text: 'Familjen flyttade till Helsingborg/Dalhem' },
+      { year: '1975', text: 'Familjen köpte hus på Jordgubbsgatan 3 i Bjuv' },
+      { year: '1996', text: 'Dottern Elin födes' },
+    ],
   },
   {
     id: 'susanne_s',
@@ -257,18 +293,38 @@ export const persons: Person[] = [
     country: 'se',
     generation: 4,
     branch: 'thomas',
-    story: 'Tredje generationen Schiffer i Sverige. Två döttrar: Anna Karin (2003) och Sara (2008). Bor i Lund-området. Håller på att samla ihop familjens historia i detta arkiv.',
+    story: 'Lillebror till Lars. Tredje generationen Schiffer i Sverige. Två döttrar: Anna Karin (2003) och Sara (2008). Bor i Lund-området. Håller på att samla ihop familjens historia i detta arkiv för både honom och sin storebror Lasse.',
+    events: [
+      { year: '27 jul 1972', text: 'Född i Linköping' },
+      { year: 'Hösten 1972', text: 'Familjen flyttade till Helsingborg/Dalhem' },
+      { year: '1975', text: 'Familjen köpte hus på Jordgubbsgatan 3 i Bjuv' },
+      { year: '~mitten av 80-talet', text: 'Föräldrarna skilde sig' },
+      { year: '2003', text: 'Dottern Anna Karin födes' },
+      { year: '2008', text: 'Dottern Sara födes' },
+    ],
   },
   {
     id: 'maria_j',
     name: 'Maria Cecilia Jansson',
     born: '1 okt 1973, Lund',
     died: '—',
-    role: 'Ex-maka',
+    role: 'Ex-fru — barnens mor',
     country: 'se',
     generation: 4,
     branch: 'in-law',
-    story: 'Registrerad i MyHeritage.',
+    story: 'Thomas ex-fru. Skilda sedan många år. Mor till Anna Karin och Sara. Registrerad i MyHeritage.',
+  },
+  {
+    id: 'marina',
+    name: 'Marina Monica Novakov',
+    born: 'Okänt',
+    died: '—',
+    role: 'Thomas fästmö',
+    country: 'se',
+    generation: 4,
+    branch: 'thomas',
+    story: 'Thomas fästmö. Dotter: Nicole Jacobson. Mor: Milena Dorencec. Mer om hennes släkt kommer att utforskas senare.',
+    events: [],
   },
   // GENERATION 4 — Norska kusiner
   {
@@ -302,7 +358,7 @@ export const persons: Person[] = [
     country: 'no',
     generation: 4,
     branch: 'cousins-no',
-    story: 'Tone Grinde är Thomas kusin via morbror Leif Kristian Grinde. Hon har bröderna Mikael och Knut Grinde. Tones barn: Erika och Odin Grinde Kristiansen.',
+    story: 'Tone Grinde är våra kusiner via morbror Leif Kristian Grinde. Hon har bröderna Mikael och Knut Grinde. Tones barn: Erika och Odin Grinde Kristiansen.',
   },
   {
     id: 'mikael',
@@ -394,6 +450,18 @@ export const persons: Person[] = [
     story: '',
   },
   {
+    id: 'nicole',
+    name: 'Nicole Jacobson',
+    born: 'Okänt',
+    died: '—',
+    role: 'Marinas dotter',
+    country: 'se',
+    generation: 5,
+    branch: 'children',
+    story: 'Marinas dotter.',
+    events: [],
+  },
+  {
     id: 'erika',
     name: 'Erika Grinde Kristiansen',
     born: 'Okänt',
@@ -448,6 +516,19 @@ export const persons: Person[] = [
     branch: 'cousins-no',
     story: '',
   },
+  // GENERATION 3 — In-law
+  {
+    id: 'milena',
+    name: 'Milena Dorencec',
+    born: 'Okänt',
+    died: '—',
+    role: 'Marinas mor',
+    country: 'se',
+    generation: 3,
+    branch: 'in-law',
+    story: 'Marinas mor. Mer om hennes bakgrund kommer utforskas senare.',
+    events: [],
+  },
 ]
 
 export const timelineEvents: TimelineEvent[] = [
@@ -455,14 +536,14 @@ export const timelineEvents: TimelineEvent[] = [
   { year: 'Sent 1800-tal', title: 'György Schiffer föds i Mörs', description: 'Den äldsta kända Schiffer-generationen. Schwab — tyskt yrkesfolk som invandrat till Ungern.', type: 'family' },
   { year: '1914–1918', title: 'Första världskriget', description: 'György Schiffer (äldre) förlorar ett ben och dör i kriget. Susanna Horesni blir ensam.', type: 'history' },
   { year: '~1930-talet', title: 'St. Ivan och St. Gál slås samman', description: 'Orterna bildar Királyegyháza ("Kungens första hus"). Maria Kiss familj kommer härifrån.', type: 'history' },
-  { year: '27 dec 1933', title: 'Laszlo György Schiffer föds i Pécs', description: 'Thomas far föds i Pécs, södra Ungern. Son till György Schiffer och Maria Kiss. Föräldrarna var aldrig gifta.', type: 'family', major: true },
-  { year: 'Aug 1938', title: 'Ference (Ferri) Kiss föds', description: 'Laszlos lillebror, också utanför äktenskapet. Familjen bor hos farmors föräldrar i Királyegyháza.', type: 'family' },
+  { year: '27 dec 1933', title: 'Laszlo György Schiffer föds i Pécs', description: 'Vår far föds i Pécs, södra Ungern. Son till György Schiffer och Maria Kiss. Föräldrarna var aldrig gifta.', type: 'family', major: true },
+  { year: 'Aug 1938', title: 'Ference (Ferri) Kiss föds', description: 'Vår fars lillebror, också utanför äktenskapet. Familjen bor hos farmors föräldrar i Királyegyháza.', type: 'family' },
   { year: '1943', title: 'Ryssarna går in i Rumänien', description: 'Julius befälsskola i Transsylvanien evakueras allt längre västerut. Hamnar till slut i Danmark som krigsfånge.', type: 'history' },
-  { year: '8 sep 1944', title: 'Åse Karin Weber föds i Trondheim', description: 'Thomas mor föds i Norge under andra världskrigets sista år. Krigsbarn — dotter till norsk mor och tysk soldat.', type: 'family', major: true },
+  { year: '8 sep 1944', title: 'Åse Karin Weber föds i Trondheim', description: 'Vår mor föds i Norge under andra världskrigets sista år. Krigsbarn — dotter till norsk mor och tysk soldat.', type: 'family', major: true },
   { year: '1947', title: 'Julius återvänder till Ungern', description: 'Efter krigsfångenskapen börjar Julius som fabriksarbetare. 35 000 personer arbetar i fabriken.', type: 'history' },
   { year: '1949', title: 'Laszlo flyttar till Budapest', description: 'Morbror Julius tar 16-årige Laszlo till Budapest för yrkesutbildning. Bor i 21:a distriktet vid Csepel. Tillverkar svarvar och fräsmaskiner.', type: 'migration' },
   { year: '1953–1955', title: 'Laszlo gör militärtjänst', description: 'Avslutas mellan jul och nyår 1955 — ett år före revolutionen.', type: 'family' },
-  { year: '23 okt 1956', title: 'Ungerska revolutionen börjar', description: 'Folkresning mot kommunistregimen och sovjetiskt förtryck. 30 fräsmaskiner i månaden tillverkas — samtliga till Ryssland som krigsskadestånd.', type: 'history', major: true },
+  { year: '23 okt 1956', title: 'Ungerska revolutionen börjar', description: 'Folkresning mot kommunistregimen och sovjetiskt förtryck. 30 fräsmaskiner i månaden tillverkas — samtliga till Ryssland som kriegsskadestånd.', type: 'history', major: true },
   { year: '6 nov 1956', title: 'Sovjetunionen slår till', description: 'Ryssarna omringar Budapest. Den ungerska militären var för svag. Västvärlden fokuserade på Suezkrisen.', type: 'history' },
   { year: 'Julen 1956', title: 'Laszlo besöker farfar i Harkány', description: 'Sista besöket hos farfar György och Julia innan flykten.', type: 'family' },
   { year: '11 jan 1957', title: 'Sista upproret i Csepel', description: 'Militären söker efter Laszlo hemma hos Julius. Via Julius får han veta att han är eftersökt.', type: 'history', major: true },
@@ -471,31 +552,36 @@ export const timelineEvents: TimelineEvent[] = [
   { year: 'Jan–mars 1957', title: 'Flyktingläger vid Adriatiska havet', description: 'Palitce/Gerovo — gammalt tyskt koncentrationsläger. 1 200 ungerska flyktingar. Knapp mat, oljefat för värme.', type: 'migration' },
   { year: 'Mars 1957', title: 'Svenska Röda Korset anländer', description: '250 av 1 200 väljs ut baserat på yrkesutbildning. Laszlo blir utvald.', type: 'migration', major: true },
   { year: 'Mars 1957', title: 'Ankomst till Sverige — Malmö', description: 'Laszlo anländer till Malmö. Placeras i Öregrund, sedan Norrtälje. Börjar arbeta på gjuteri.', type: 'migration', major: true },
-  { year: '16 apr 1969', title: 'Lars Göran Schiffer föds', description: 'Thomas äldre bror.', type: 'family' },
-  { year: '27 jul 1972', title: 'Thomas Schiffer föds i Linköping', description: 'Tredje generationen i Sverige.', type: 'family', major: true },
-  { year: 'Maj 1994', title: 'Ference Kiss (Ferri) dör', description: 'Laszlos bror, ca 56 år. Hade arbetat vid urangruvan utanför Pécs. Troligen sjuk av strålning.', type: 'family' },
+  { year: '16 apr 1969', title: 'Lars-Göran "Lasse" Schiffer föds', description: 'Storebror till Thomas. Första av bröderna Schiffer.', type: 'family', major: true },
+  { year: '27 jul 1972', title: 'Thomas Schiffer föds i Linköping', description: 'Lillebror till Lasse. Tredje generationen i Sverige.', type: 'family', major: true },
+  { year: 'Maj 1994', title: 'Ference Kiss (Ferri) dör', description: 'Vår fars bror, ca 56 år. Hade arbetat vid urangruvan utanför Pécs. Troligen sjuk av strålning.', type: 'family' },
   { year: '1995–1997', title: 'Flera familjemedlemmar går bort', description: 'Farmor Maria Kiss (juni 1995), Ilonka (okt 1995). Julius dör 6 jan 1997 — arvsskattekrav HUF 202 256 på Laszlo.', type: 'family' },
   { year: '1998', title: 'Szava Klára testamenterar lägenheten', description: 'Szava Klára ger sin 39 m² lägenhet i Siklós till Laszlo. Döttrarna Edit och Ágnes Todenbier godtar testamentet. Laszlos namnbyte behandlas (dec 1998).', type: 'family' },
   { year: '1999', title: 'Inkasso för Julius arvsskatt', description: 'Sigma Company Ltd. kräver SEK 7 294 av Laszlo — arvsskatt efter Julius dödsbo. Oklart om skulden betalades.', type: 'family' },
   { year: '2003–2008', title: 'Thomas döttrar föds', description: 'Anna Karin (2003) och Sara (2008, Lund). Femte generationen sedan farfars far.', type: 'family' },
-  { year: '2011', title: 'Laszlo György Schiffer dör', description: 'Thomas far går bort i Helsingborg vid ca 78 års ålder. Från revolutionär i Budapest till nytt liv i Sverige. Arvsrätten till Siklós-lägenheten övergår till Thomas och Lars.', type: 'family', major: true },
+  { year: '2011', title: 'Laszlo György Schiffer dör', description: 'Vår far går bort i Helsingborg vid ca 78 års ålder. Från revolutionär i Budapest till nytt liv i Sverige. Arvsrätten till Siklós-lägenheten övergår till Thomas och Lars.', type: 'family', major: true },
 ]
 
 export const flightRoute: RouteStop[] = [
-  { number: 1, place: 'Budapest', detail: 'Csepel, 21:a distriktet', date: '13 jan 1957', color: '#c4463a' },
-  { number: 2, place: 'Pécs', detail: 'Tåg via S:t Elisabeth', color: '#c4463a' },
-  { number: 3, place: 'Subotica', detail: 'Till fots över pusztan', color: '#7b4a8e' },
-  { number: 4, place: 'Palitce / Gerovo', detail: 'Flyktingläger, ~6 veckor', color: '#7b4a8e' },
-  { number: 5, place: 'Rijeka', detail: 'Röda Korset, hotell vid kusten', color: '#7b4a8e' },
-  { number: 6, place: 'Österrike', detail: 'Chartrat tåg', color: '#666' },
-  { number: 7, place: 'Tyskland', detail: 'Coca-Cola vid stationerna', color: '#666' },
-  { number: 8, place: 'Malmö', detail: 'Ankomst Sverige', date: 'Mars 1957', color: '#1d6aa5' },
-  { number: 9, place: 'Öregrund', detail: 'Stadshotellet', color: '#1d6aa5' },
-  { number: 10, place: 'Norrtälje', detail: 'Gjuteriet, 3 år', color: '#1d6aa5' },
+  { number: 1, place: 'Budapest', detail: 'Csepel, 21:a distriktet', date: '13 jan 1957', color: '#c4463a', lat: 47.5, lng: 19.04 },
+  { number: 2, place: 'Pécs', detail: 'Tåg via S:t Elisabeth', color: '#c4463a', lat: 46.07, lng: 18.23 },
+  { number: 3, place: 'Subotica', detail: 'Till fots över pusztan', color: '#7b4a8e', lat: 46.1, lng: 19.66 },
+  { number: 4, place: 'Palitce / Gerovo', detail: 'Flyktingläger, ~6 veckor', color: '#7b4a8e', lat: 45.4, lng: 14.8 },
+  { number: 5, place: 'Rijeka', detail: 'Röda Korset, hotell vid kusten', color: '#7b4a8e', lat: 45.33, lng: 14.44 },
+  { number: 6, place: 'Österrike', detail: 'Chartrat tåg', color: '#666', lat: 47.5, lng: 14.5 },
+  { number: 7, place: 'Tyskland', detail: 'Coca-Cola vid stationerna', color: '#666', lat: 48.5, lng: 11.0 },
+  { number: 8, place: 'Malmö', detail: 'Ankomst Sverige', date: 'Mars 1957', color: '#1d6aa5', lat: 55.6, lng: 13.0 },
+  { number: 9, place: 'Öregrund', detail: 'Stadshotellet', color: '#1d6aa5', lat: 60.33, lng: 18.44 },
+  { number: 10, place: 'Norrtälje', detail: 'Gjuteriet, 3 år', color: '#1d6aa5', lat: 59.76, lng: 18.7 },
+  { number: 11, place: 'Norrköping', detail: 'Laszlo träffar Åse Karin', color: '#1d6aa5', lat: 58.59, lng: 16.19 },
+  { number: 12, place: 'Linköping', detail: 'Lasse (1969) och Thomas (1972) föds', color: '#1d6aa5', lat: 58.41, lng: 15.63 },
+  { number: 13, place: 'Helsingborg / Dalhem', detail: 'Familjen bor 3 år', date: 'Hösten 1972', color: '#1d6aa5', lat: 56.05, lng: 12.7 },
+  { number: 14, place: 'Bjuv / Jordgubbsgatan 3', detail: 'Eget hus tills skilsmässan', date: '1975 – ~mitten av 80-talet', color: '#1d6aa5', lat: 56.08, lng: 12.92 },
+  { number: 15, place: 'Helsingborg', detail: 'Laszlo flyttar tillbaka', date: '~mitten av 80-talet', color: '#1d6aa5', lat: 56.05, lng: 12.7 },
 ]
 
 export const researchGaps: ResearchGap[] = [
-  { title: 'Den tyske soldaten Weber', description: 'Efternamnet Weber, från Dresden. Försvann i rysk fångenskap i norra Norge ~1945. Förnamnet är den saknade nyckeln. Bundesarchiv-Militärarchiv (Freiburg), ryska krigsfångenskapsdatabaser och Norges Krigsbarnforbund kan hjälpa.', priority: 'high' },
+  { title: 'Den tyske soldaten Weber', description: 'Efternamnet Weber, från Dresden. Försvann i rysk fångenskap i norra Norge ~1945. Förnamnet är den saknade nyckeln. Bundesarchiv-Militärarchiv (Freiburg), ryska krigsfångenskapsdatabaser och Norges Kriegsbarnforbund kan hjälpa.', priority: 'high' },
   { title: 'Lägenheten i Siklós', description: 'Szava Klára (f. 1942) testamenterade 1998 en 39 m² lägenhet till Laszlo. Thomas och Lars är rättmätiga arvingar sedan 2011. Nästa steg: samla svenska arvsdokument, kontakta ungersk advokat i Baranya-regionen.', priority: 'high' },
   { title: 'Mormorns föräldrar', description: 'Aase Cecilie Sand, f. ~1924 Trondheim. Hennes systrar: Helga Marie Rønning och Turid. Faderns och moderns namn okända. Digitalarkivet (folkräkningar 1910/1920) kan ge uppgifter.', priority: 'medium' },
   { title: 'Farfar György Schiffer', description: 'Inget exakt födelse- eller dödsdatum. Vagnmakare — kan finnas i skråregister eller yrkesföreningsarkiv i Pécs/Baranya.', priority: 'medium' },
@@ -506,16 +592,16 @@ export const researchGaps: ResearchGap[] = [
   { title: 'Laszlo och Åses giftermål', description: 'Var och när gifte de sig? Vigselbevis från Helsingborg eller Linköping?', priority: 'low' },
   { title: 'Laszlos ankomst till Sverige', description: 'Röda Korsets arkiv och Migrationsverket bör ha dokumentation om kontingenten på 250 personer.', priority: 'low' },
   { title: 'DNA-matchningar', description: '9 077 DNA-matchningar i MyHeritage. Kan avslöja okända släktgrenar, speciellt på ungerska och tyska sidan.', priority: 'medium' },
-  { title: 'Norska Krigsbarnsarkiv', description: 'Norges Riksarkiv har dokumentation om krigsbarn. Åse Karin Weber borde finnas i dessa register. Kontakt via riksarkivet.no.', priority: 'high' },
+  { title: 'Norska Krigsbarnsarkiv', description: 'Norges Riksarkiv har dokumentation om kriegsbarn. Åse Karin Weber borde finnas i dessa register. Kontakt via riksarkivet.no.', priority: 'high' },
 ]
 
-export const familySummary = `Familjen Schiffer har rötter i fyra länder och bär spår av 1900-talets stora historiska katastrofer — det första världskriget, den tyska ockupationen av Norge, och den ungerska revolutionen 1956.
+export const familySummary = `Vi är bröderna Schiffer — Lasse och Thomas — och vår familj har rötter i fyra länder och bär spår av 1900-talets stora historiska katastrofer — det första världskriget, den tyska ockupationen av Norge, och den ungerska revolutionen 1956.
 
-Thomas far, Laszlo György Schiffer, föddes den 27 december 1933 i Pécs, Ungern. Hans farfar var schwab (dunauschwabiskt tyskt yrkesfolk) och vagnmakare. Laszlo deltog i 1956 års revolution, angavs och flydde den 13 januari 1957 via Jugoslavien till Sverige med Svenska Röda Korset.
+Vår far, Laszlo György Schiffer, föddes den 27 december 1933 i Pécs, Ungern. Hans farfar var schwab (dunauschwabiskt tyskt yrkesfolk) och vagnmakare. Vår far deltog i 1956 års revolution, angavs och flydde den 13 januari 1957 via Jugoslavien till Sverige med Svenska Röda Korset.
 
-Thomas mor, Åse Karin Weber, föddes i Trondheim 1944 som krigsbarn — dotter till en norsk kvinna och en tysk soldat vid namn Weber från Dresden som försvann i rysk fångenskap. Hon levde under stigmat "tysketøs" i efterkrigstidens Norge.
+Vår mor, Åse Karin Weber, föddes i Trondheim 1944 som krigsbarn — dotter till en norsk kvinna och en tysk soldat vid namn Weber från Dresden som försvann i rysk fångenskap. Hon levde under stigmat "tysketøs" i efterkrigstidens Norge.
 
-Mormor Åse Sand fick fyra barn med tre olika fäder: Åse Karin (med soldaten Weber), Leif Kristian och Georg (med Grinde), och Jarle (med brevbäraren Odd Strømsem). Laszlo och Åse Karin fick sönerna Lars Göran (1969) och Thomas (1972) och bosatte sig i Helsingborg-trakten.`
+Vår mormor Åse Sand fick fyra barn med tre olika fäder: vår mor Åse Karin (med soldaten Weber), morbror Leif Kristian och Georg (med Grinde), och morbror Jarle (med brevbäraren Odd Strømsem). Vår far och mor fick sönerna Lasse (1969) och Thomas (1972) och bosatte sig i Helsingborg-trakten.`
 
 export const stats = [
   { value: '40+', label: 'Registrerade personer' },
@@ -544,6 +630,6 @@ export const generationLabels: Record<number, string> = {
   1: 'Generation 1 — Farfars föräldrar (~1800-talet)',
   2: 'Generation 2 — Far- och morföräldrar',
   3: 'Generation 3 — Föräldrar & morbrödrar',
-  4: 'Generation 4 — Thomas generation',
+  4: 'Generation 4 — Bröderna Schiffers generation',
   5: 'Generation 5 — Barn & barnbarn',
 }
