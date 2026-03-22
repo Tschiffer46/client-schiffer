@@ -1,0 +1,92 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Person {
+  id         String   @id @default(cuid())
+  name       String
+  nickname   String?
+  born       String   @default("")
+  died       String   @default("")
+  role       String   @default("")
+  country    String   @default("")
+  generation Int      @default(0)
+  branch     String   @default("")
+  story      String   @default("")
+  photoUrl   String?
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  relationshipsFrom Relationship[] @relation("fromPerson")
+  relationshipsTo   Relationship[] @relation("toPerson")
+  photoLabels       PhotoLabel[]
+}
+
+model Relationship {
+  id     String @id @default(cuid())
+  fromId String
+  toId   String
+  type   String // partner, ex-partner, parent, child, sibling
+
+  from Person @relation("fromPerson", fields: [fromId], references: [id], onDelete: Cascade)
+  to   Person @relation("toPerson", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@unique([fromId, toId, type])
+}
+
+model TimelineEvent {
+  id          String   @id @default(cuid())
+  year        String
+  title       String
+  description String
+  type        String   // family, history, migration
+  major       Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RouteStop {
+  id     String  @id @default(cuid())
+  number Int
+  place  String
+  detail String
+  date   String?
+  color  String
+}
+
+model ResearchGap {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  priority    String   @default("low") // high, medium, low
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Photo {
+  id           String       @id @default(cuid())
+  filename     String
+  originalName String
+  caption      String?
+  uploadedAt   DateTime     @default(now())
+  labels       PhotoLabel[]
+}
+
+model PhotoLabel {
+  id       String @id @default(cuid())
+  photoId  String
+  personId String
+
+  photo  Photo  @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([photoId, personId])
+}
