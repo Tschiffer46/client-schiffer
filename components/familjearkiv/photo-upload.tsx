@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useId, useRef, useState } from "react";
 import { Modal } from "./modal";
 
 interface Person {
@@ -20,6 +20,7 @@ export function PhotoUpload({
   onUploaded: () => void;
   persons: Person[];
 }) {
+  const uid = useId();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
@@ -84,65 +85,74 @@ export function PhotoUpload({
   return (
     <Modal open={open} onClose={handleClose} title="Ladda upp foto">
       <form onSubmit={handleUpload} className="space-y-4">
-        {/* File input */}
-        <div
+        {/* File picker — a real button so it works with keyboard */}
+        <button
+          type="button"
           onClick={() => fileRef.current?.click()}
-          className="border-2 border-dashed border-stone-300 rounded-xl p-6 text-center cursor-pointer hover:border-accent/50 transition-colors"
+          className="w-full border-2 border-dashed border-stone-300 rounded-xl p-6 text-center cursor-pointer hover:border-accent/60 transition-colors"
         >
           {preview ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={preview}
-              alt="Preview"
+              alt="Förhandsvisning av vald bild"
               className="max-h-48 mx-auto rounded-lg"
             />
           ) : (
-            <div>
+            <span className="block">
               <svg
                 width="32"
                 height="32"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#a8a29e"
+                stroke="#57534e"
                 strokeWidth="1.5"
                 className="mx-auto mb-2"
+                aria-hidden="true"
               >
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                 <polyline points="17 8 12 3 7 8" />
                 <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
-              <p className="text-sm text-stone-500">
+              <span className="text-[15px] text-stone-600">
                 Klicka för att välja bild
-              </p>
-            </div>
+              </span>
+            </span>
           )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-        </div>
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+          aria-hidden="true"
+          tabIndex={-1}
+        />
 
         {/* Caption */}
         <div>
-          <label className="block text-xs font-medium text-stone-500 mb-1">
+          <label
+            htmlFor={`${uid}-caption`}
+            className="block text-sm font-medium text-stone-700 mb-1"
+          >
             Bildtext
           </label>
           <input
+            id={`${uid}-caption`}
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm"
+            className="w-full px-3 py-2 rounded-lg border border-stone-300 text-[15px]"
             placeholder="Beskriv bilden..."
           />
         </div>
 
         {/* Person labels */}
-        <div>
-          <label className="block text-xs font-medium text-stone-500 mb-2">
+        <fieldset>
+          <legend className="block text-sm font-medium text-stone-700 mb-2">
             Tagga personer
-          </label>
-          <div className="max-h-48 overflow-y-auto space-y-1 border border-stone-200 rounded-lg p-2">
+          </legend>
+          <div className="max-h-48 overflow-y-auto space-y-1 border border-stone-300 rounded-lg p-2">
             {persons.map((p) => (
               <label
                 key={p.id}
@@ -152,24 +162,21 @@ export function PhotoUpload({
                   type="checkbox"
                   checked={selectedPersons.has(p.id)}
                   onChange={() => togglePerson(p.id)}
-                  className="rounded border-stone-300 text-accent focus:ring-accent/30"
+                  className="rounded border-stone-300 w-4 h-4"
                 />
-                <span className="text-sm text-stone-700">
+                <span className="text-[15px] text-stone-700">
                   {p.nickname || p.name}
-                </span>
-                <span className="text-[10px] text-stone-400">
-                  #{(p.nickname || p.name).replace(/\s+/g, "")}
                 </span>
               </label>
             ))}
           </div>
-        </div>
+        </fieldset>
 
         <div className="flex gap-3 justify-end pt-2">
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-800"
+            className="px-4 py-2 text-sm font-medium text-stone-700 hover:text-ink rounded-lg"
           >
             Avbryt
           </button>

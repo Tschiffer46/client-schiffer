@@ -1,3 +1,7 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Länkar" };
+
 const links = [
   {
     title: "Havstornet",
@@ -22,10 +26,10 @@ const links = [
 export default function Lankar() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
-      <h1 className="text-3xl sm:text-4xl font-semibold text-stone-800 mb-2">
+      <h1 className="font-display text-3xl sm:text-4xl font-semibold text-ink tracking-tight mb-2">
         Länkar
       </h1>
-      <p className="text-stone-500 mb-12">
+      <p className="text-stone-600 mb-12">
         Sidor som hör till oss eller som vi vill lyfta fram.
       </p>
 
@@ -36,17 +40,21 @@ export default function Lankar() {
             href={l.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="block border border-stone-200 rounded-xl p-6 bg-white hover:border-accent hover:shadow-sm transition-all group"
+            className="block border border-stone-200 rounded-2xl p-6 bg-white shadow-sm hover:border-accent hover:shadow-md transition-all group"
           >
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-semibold text-stone-800 group-hover:text-accent transition-colors">
+              <h2 className="font-display text-lg font-semibold text-ink group-hover:text-accent transition-colors">
                 {l.title}
+                <span className="sr-only"> (öppnas i ny flik)</span>
               </h2>
-              <span className="text-stone-400 group-hover:text-accent transition-colors text-lg">
+              <span
+                className="text-stone-600 group-hover:text-accent transition-colors text-lg"
+                aria-hidden="true"
+              >
                 &nearr;
               </span>
             </div>
-            <p className="text-stone-500 text-sm">{l.description}</p>
+            <p className="text-stone-600 text-sm">{l.description}</p>
           </a>
         ))}
       </div>

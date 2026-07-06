@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 
 export function Modal({
   open,
@@ -14,6 +14,7 @@ export function Modal({
   children: React.ReactNode;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     const el = dialogRef.current;
@@ -29,23 +30,28 @@ export function Modal({
     <dialog
       ref={dialogRef}
       onClose={onClose}
-      className="backdrop:bg-black/40 rounded-xl border border-stone-200 shadow-xl p-0 max-w-lg w-full"
+      aria-labelledby={titleId}
+      className="backdrop:bg-black/50 rounded-2xl border border-stone-200 shadow-xl p-0 max-w-lg w-[calc(100%-2rem)] m-auto"
     >
       <div className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-stone-800">{title}</h2>
+        <div className="flex items-center justify-between mb-5">
+          <h2 id={titleId} className="font-display text-xl font-semibold text-ink">
+            {title}
+          </h2>
           <button
             onClick={onClose}
-            className="text-stone-400 hover:text-stone-600"
+            aria-label="Stäng dialogrutan"
+            className="text-stone-600 hover:text-ink p-2 -mr-2 rounded-lg hover:bg-stone-100 transition-colors"
           >
             <svg
-              width="20"
-              height="20"
+              width="18"
+              height="18"
               viewBox="0 0 20 20"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
+              aria-hidden="true"
             >
               <path d="M5 5l10 10M15 5L5 15" />
             </svg>

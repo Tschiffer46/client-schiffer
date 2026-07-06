@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AddButton, DeleteButton } from "./crud-buttons";
 import { PhotoUpload } from "./photo-upload";
@@ -11,13 +11,99 @@ interface Photo {
   filename: string;
   originalName: string;
   caption: string | null;
-  labels: { id: string; person: { id: string; name: string; nickname: string | null } }[];
+  labels: {
+    id: string;
+    person: { id: string; name: string; nickname: string | null };
+  }[];
 }
 
 interface Person {
   id: string;
   name: string;
   nickname: string | null;
+}
+
+function photoAlt(photo: Photo) {
+  if (photo.caption) return photo.caption;
+  const names = photo.labels.map(
+    (l) => l.person.nickname || l.person.name.split(" ")[0]
+  );
+  return names.length > 0 ? `Foto med ${names.join(", ")}` : "Familjefoto";
+}
+
+function Lightbox({
+  photo,
+  onClose,
+}: {
+  photo: Photo | null;
+  onClose: () => void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const el = dialogRef.current;
+    if (!el) return;
+    if (photo && !el.open) el.showModal();
+    if (!photo && el.open) el.close();
+  }, [photo]);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      onClose={onClose}
+      onClick={(e) => {
+        if (e.target === dialogRef.current) onClose();
+      }}
+      aria-label={photo ? photoAlt(photo) : "Foto"}
+      className="backdrop:bg-black/70 bg-transparent p-0 max-w-4xl w-[calc(100%-2rem)] m-auto"
+    >
+      {photo && (
+        <div className="bg-white rounded-2xl overflow-hidden shadow-xl">
+          <div className="flex items-center justify-end p-2 absolute top-2 right-2 z-10">
+            <button
+              onClick={onClose}
+              aria-label="Stäng fotovisaren"
+              className="bg-white/90 text-stone-700 hover:text-ink rounded-full p-2 shadow"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
+                <path d="M5 5l10 10M15 5L5 15" />
+              </svg>
+            </button>
+          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/api/uploads/photos/${photo.filename}`}
+            alt={photoAlt(photo)}
+            className="w-full max-h-[70vh] object-contain bg-stone-950"
+          />
+          <div className="p-4 sm:p-5">
+            {photo.caption && (
+              <p className="text-[15px] text-ink font-medium mb-1.5">
+                {photo.caption}
+              </p>
+            )}
+            {photo.labels.length > 0 && (
+              <p className="text-sm text-stone-600">
+                På bilden:{" "}
+                {photo.labels
+                  .map((l) => l.person.nickname || l.person.name)
+                  .join(", ")}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </dialog>
+  );
 }
 
 export function PhotosClient({
@@ -30,6 +116,7 @@ export function PhotosClient({
   const router = useRouter();
   const [showUpload, setShowUpload] = useState(false);
   const [deletePhoto, setDeletePhoto] = useState<Photo | null>(null);
+  const [viewPhoto, setViewPhoto] = useState<Photo | null>(null);
 
   async function handleDelete() {
     if (!deletePhoto) return;
@@ -38,20 +125,20 @@ export function PhotosClient({
     router.refresh();
   }
 
-  if (photos.length === 0 && !showUpload) {
+  if (photos.length === 0) {
     return (
       <div>
-        <div className="flex justify-end mb-4">
-          <AddButton onClick={() => setShowUpload(true)} label="Ladda upp" />
-        </div>
-        <div className="text-center py-16">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-stone-100 flex items-center justify-center">
+        <div className="text-center py-16 max-w-md mx-auto">
+          <div
+            className="w-16 h-16 mx-auto mb-5 rounded-full bg-accent-soft flex items-center justify-center"
+            aria-hidden="true"
+          >
             <svg
-              width="24"
-              height="24"
+              width="26"
+              height="26"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#a8a29e"
+              stroke="#2c5f8a"
               strokeWidth="1.5"
             >
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -59,12 +146,17 @@ export function PhotosClient({
               <polyline points="21 15 16 10 5 21" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-stone-700 mb-1">
-            Inga foton ännu
-          </h3>
-          <p className="text-sm text-stone-500">
-            Ladda upp familjefoton för att börja bygga fotoarkivet.
+          <h2 className="font-display text-xl font-semibold text-ink mb-2">
+            Fotoalbumet väntar på sin första bild
+          </h2>
+          <p className="text-[15px] text-stone-600 mb-6">
+            Gamla fotografier gör historien levande. Skanna eller fota av
+            albumen, ladda upp och tagga vilka som syns på bilderna.
           </p>
+          <AddButton
+            onClick={() => setShowUpload(true)}
+            label="Ladda upp första fotot"
+          />
         </div>
 
         {showUpload && (
@@ -81,49 +173,64 @@ export function PhotosClient({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <p className="text-sm text-stone-500">
-          Familjefoton — klicka för att se detaljer
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <p className="text-[15px] text-stone-600">
+          {photos.length} {photos.length === 1 ? "foto" : "foton"} — klicka på
+          en bild för att se den i stort format.
         </p>
         <AddButton onClick={() => setShowUpload(true)} label="Ladda upp" />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 list-none">
         {photos.map((photo) => (
-          <div
+          <li
             key={photo.id}
-            className="bg-white border border-stone-200 rounded-xl overflow-hidden group"
+            className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-sm transition-shadow hover:shadow-md relative"
           >
-            <div className="aspect-square bg-stone-100 relative">
-              <img
-                src={`/api/uploads/photos/${photo.filename}`}
-                alt={photo.caption || photo.originalName}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-2 right-2 hidden group-hover:block">
-                <DeleteButton onClick={() => setDeletePhoto(photo)} />
+            <button
+              onClick={() => setViewPhoto(photo)}
+              className="block w-full text-left"
+              aria-label={`Visa ${photoAlt(photo)} i stort format`}
+            >
+              <div className="aspect-square bg-stone-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/api/uploads/photos/${photo.filename}`}
+                  alt={photoAlt(photo)}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
               </div>
-            </div>
-            <div className="p-3">
-              {photo.caption && (
-                <p className="text-xs text-stone-700 font-medium mb-1">
-                  {photo.caption}
-                </p>
-              )}
-              <div className="flex flex-wrap gap-1">
-                {photo.labels.map((label) => (
-                  <span
-                    key={label.id}
-                    className="text-[10px] bg-accent/10 text-accent rounded-full px-2 py-0.5"
-                  >
-                    #{label.person.nickname || label.person.name.split(" ")[0]}
-                  </span>
-                ))}
+              <div className="p-3">
+                {photo.caption && (
+                  <p className="text-sm text-ink font-medium mb-1 line-clamp-2">
+                    {photo.caption}
+                  </p>
+                )}
+                {photo.labels.length > 0 && (
+                  <p className="flex flex-wrap gap-1">
+                    {photo.labels.map((label) => (
+                      <span
+                        key={label.id}
+                        className="text-xs bg-accent-soft text-accent-dark rounded-full px-2 py-0.5"
+                      >
+                        #
+                        {label.person.nickname ||
+                          label.person.name.split(" ")[0]}
+                      </span>
+                    ))}
+                  </p>
+                )}
               </div>
+            </button>
+            <div className="absolute top-2 right-2 bg-white/90 rounded-lg shadow">
+              <DeleteButton onClick={() => setDeletePhoto(photo)} />
             </div>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
+
+      <Lightbox photo={viewPhoto} onClose={() => setViewPhoto(null)} />
 
       {showUpload && (
         <PhotoUpload

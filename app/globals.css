@@ -1,8 +1,26 @@
 @import "tailwindcss";
 
-@theme inline {
-  --color-accent: #5B8DB8;
-  --color-accent-dark: #4a7aa3;
+@theme {
+  /* Interactive accent — deep fjord blue, ≥4.5:1 on white and paper */
+  --color-accent: #2c5f8a;
+  --color-accent-dark: #234c6f;
+  --color-accent-soft: #e9eff5;
+
+  /* Warm paper surfaces */
+  --color-paper: #faf8f5;
+  --color-ink: #1c1917;
+
+  /* Country identity colors — categorical, CVD-validated as a set.
+     Dot variants pass 3:1 as graphics; text variants pass 4.5:1 as text. */
+  --color-country-hu: #b91c1c;
+  --color-country-se: #2563eb;
+  --color-country-no: #0d9488;
+  --color-country-de: #b45309;
+  --color-country-no-text: #0f766e;
+  --color-country-de-text: #92400e;
+
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino,
+    Georgia, "Times New Roman", serif;
 }
 
 html {
@@ -10,10 +28,24 @@ html {
 }
 
 body {
-  background-color: #fafaf9;
+  background-color: var(--color-paper);
   color: #292524;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* One consistent, visible focus indicator for every interactive element */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: #fff;
 }
 
 @keyframes fade-in {
@@ -29,4 +61,17 @@ body {
 
 .animate-fade-in {
   animation: fade-in 0.25s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function LoggaIn() {
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -31,6 +32,7 @@ export default function LoggaIn() {
     } else {
       setError(true);
       setPassword("");
+      inputRef.current?.focus();
     }
     setLoading(false);
   }
@@ -39,13 +41,16 @@ export default function LoggaIn() {
     <div className="min-h-[calc(100vh-7rem)] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="flex justify-center mb-6">
-          <div className="w-14 h-14 rounded-full bg-stone-100 flex items-center justify-center">
+          <div
+            className="w-14 h-14 rounded-full bg-accent-soft flex items-center justify-center"
+            aria-hidden="true"
+          >
             <svg
               width="24"
               height="24"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#5B8DB8"
+              stroke="#2c5f8a"
               strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -55,40 +60,87 @@ export default function LoggaIn() {
             </svg>
           </div>
         </div>
-        <h1 className="text-2xl font-semibold text-stone-800 text-center mb-1">
+        <h1 className="font-display text-3xl font-semibold text-ink text-center mb-2">
           Familjearkiv
         </h1>
-        <p className="text-stone-500 text-sm text-center mb-8">
-          Det här avsnittet är skyddat. Ange lösenordet för att komma åt
-          familjehistorien.
+        <p className="text-stone-600 text-[15px] text-center mb-8">
+          Här inne finns familjens historia — släktträdet, flykten 1957 och
+          alla berättelser. Ange lösenordet för att öppna arkivet.
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
               htmlFor="password"
-              className="block text-xs font-medium text-stone-500 uppercase tracking-wide mb-1.5"
+              className="block text-sm font-medium text-stone-700 mb-1.5"
             >
               Lösenord
             </label>
-            <input
-              id="password"
-              ref={inputRef}
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setError(false);
-              }}
-              className={`w-full px-4 py-3 rounded-lg border text-stone-800 text-sm placeholder:text-stone-300 bg-white outline-none transition-colors focus:ring-2 focus:ring-accent/30 ${
-                error
-                  ? "border-red-400 focus:border-red-400"
-                  : "border-stone-200 focus:border-accent"
-              }`}
-              placeholder="Ange lösenord..."
-              autoComplete="current-password"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                ref={inputRef}
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError(false);
+                }}
+                aria-invalid={error || undefined}
+                aria-describedby={error ? "password-error" : undefined}
+                className={`w-full px-4 py-3 pr-12 rounded-lg border text-ink text-[15px] placeholder:text-stone-500 bg-white transition-colors ${
+                  error
+                    ? "border-red-600"
+                    : "border-stone-300 focus:border-accent"
+                }`}
+                placeholder="Ange lösenord..."
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                aria-label={showPassword ? "Dölj lösenordet" : "Visa lösenordet"}
+                aria-pressed={showPassword}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-stone-600 hover:text-ink rounded-md"
+              >
+                {showPassword ? (
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                ) : (
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
+            </div>
             {error && (
-              <p className="mt-2 text-xs text-red-500">
+              <p
+                id="password-error"
+                role="alert"
+                className="mt-2 text-sm text-red-700"
+              >
                 Fel lösenord. Försök igen.
               </p>
             )}
@@ -96,12 +148,12 @@ export default function LoggaIn() {
           <button
             type="submit"
             disabled={loading || password.length === 0}
-            className="w-full bg-accent text-white py-3 rounded-lg text-sm font-medium hover:bg-accent-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full bg-accent text-white py-3 rounded-lg text-[15px] font-medium hover:bg-accent-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? "Verifierar..." : "Öppna arkivet"}
           </button>
         </form>
-        <p className="mt-8 text-center text-xs text-stone-300">
+        <p className="mt-8 text-center text-sm text-stone-600">
           Familjerna Schiffer &middot; privat arkiv
         </p>
       </div>
