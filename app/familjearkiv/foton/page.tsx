@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PhotosClient } from "@/components/familjearkiv/photos-client";
+
+export const metadata: Metadata = { title: "Foton" };
 
 export default async function FotonPage() {
   const photos = await prisma.photo.findMany({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Modal } from "./modal";
 
 interface PersonData {
@@ -34,6 +34,10 @@ const countries = [
   { value: "de", label: "Tyskland" },
 ];
 
+const inputClass =
+  "w-full px-3 py-2 rounded-lg border border-stone-300 text-[15px]";
+const labelClass = "block text-sm font-medium text-stone-700 mb-1";
+
 export function PersonForm({
   open,
   onClose,
@@ -47,6 +51,7 @@ export function PersonForm({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initial?: any;
 }) {
+  const uid = useId();
   const [form, setForm] = useState<PersonData>({
     name: initial?.name || "",
     nickname: initial?.nickname || "",
@@ -77,27 +82,29 @@ export function PersonForm({
       onClose={onClose}
       title={initial?.id ? "Redigera person" : "Lägg till person"}
     >
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-stone-500 mb-1">
+            <label htmlFor={`${uid}-name`} className={labelClass}>
               Namn *
             </label>
             <input
+              id={`${uid}-name`}
               required
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm"
+              className={inputClass}
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-stone-500 mb-1">
+            <label htmlFor={`${uid}-nickname`} className={labelClass}>
               Smeknamn
             </label>
             <input
+              id={`${uid}-nickname`}
               value={form.nickname || ""}
               onChange={(e) => set("nickname", e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm"
+              className={inputClass}
               placeholder="t.ex. Lasse"
             />
           </div>
@@ -105,50 +112,54 @@ export function PersonForm({
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-stone-500 mb-1">
+            <label htmlFor={`${uid}-born`} className={labelClass}>
               Född
             </label>
             <input
+              id={`${uid}-born`}
               value={form.born}
               onChange={(e) => set("born", e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm"
+              className={inputClass}
               placeholder="27 jul 1972, Linköping"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-stone-500 mb-1">
+            <label htmlFor={`${uid}-died`} className={labelClass}>
               Död
             </label>
             <input
+              id={`${uid}-died`}
               value={form.died}
               onChange={(e) => set("died", e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm"
+              className={inputClass}
               placeholder="— eller datum"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-stone-500 mb-1">
+          <label htmlFor={`${uid}-role`} className={labelClass}>
             Roll
           </label>
           <input
+            id={`${uid}-role`}
             value={form.role}
             onChange={(e) => set("role", e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm"
+            className={inputClass}
             placeholder="t.ex. Far, Morbror, Kusin"
           />
         </div>
 
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-medium text-stone-500 mb-1">
+            <label htmlFor={`${uid}-country`} className={labelClass}>
               Land
             </label>
             <select
+              id={`${uid}-country`}
               value={form.country}
               onChange={(e) => set("country", e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm"
+              className={`${inputClass} bg-white`}
             >
               {countries.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -158,13 +169,14 @@ export function PersonForm({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-stone-500 mb-1">
+            <label htmlFor={`${uid}-generation`} className={labelClass}>
               Generation
             </label>
             <select
+              id={`${uid}-generation`}
               value={form.generation}
               onChange={(e) => set("generation", parseInt(e.target.value))}
-              className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm"
+              className={`${inputClass} bg-white`}
             >
               {[1, 2, 3, 4, 5].map((g) => (
                 <option key={g} value={g}>
@@ -174,13 +186,14 @@ export function PersonForm({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-stone-500 mb-1">
+            <label htmlFor={`${uid}-branch`} className={labelClass}>
               Gren
             </label>
             <select
+              id={`${uid}-branch`}
               value={form.branch}
               onChange={(e) => set("branch", e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm"
+              className={`${inputClass} bg-white`}
             >
               {branches.map((b) => (
                 <option key={b.value} value={b.value}>
@@ -192,14 +205,15 @@ export function PersonForm({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-stone-500 mb-1">
+          <label htmlFor={`${uid}-story`} className={labelClass}>
             Berättelse
           </label>
           <textarea
+            id={`${uid}-story`}
             value={form.story}
             onChange={(e) => set("story", e.target.value)}
             rows={4}
-            className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm"
+            className={inputClass}
             placeholder="Berätta om personen..."
           />
         </div>
@@ -208,7 +222,7 @@ export function PersonForm({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-800"
+            className="px-4 py-2 text-sm font-medium text-stone-700 hover:text-ink rounded-lg"
           >
             Avbryt
           </button>

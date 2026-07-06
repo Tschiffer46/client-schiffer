@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Modal } from "./modal";
 
 export function DeleteConfirm({
@@ -14,6 +14,7 @@ export function DeleteConfirm({
   onConfirm: () => void;
   itemName: string;
 }) {
+  const uid = useId();
   const [step, setStep] = useState<1 | 2>(1);
   const [confirmText, setConfirmText] = useState("");
 
@@ -38,20 +39,20 @@ export function DeleteConfirm({
     <Modal open={open} onClose={handleClose} title="Bekräfta radering">
       {step === 1 ? (
         <div>
-          <p className="text-sm text-stone-600 mb-6">
-            Är du säker på att du vill radera <strong>{itemName}</strong>? Denna
-            åtgärd kan inte ångras.
+          <p className="text-[15px] text-stone-700 mb-6">
+            Är du säker på att du vill radera <strong>{itemName}</strong>?
+            Denna åtgärd kan inte ångras.
           </p>
           <div className="flex gap-3 justify-end">
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-800"
+              className="px-4 py-2 text-sm font-medium text-stone-700 hover:text-ink rounded-lg"
             >
               Avbryt
             </button>
             <button
               onClick={handleFirstConfirm}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600"
+              className="px-4 py-2 text-sm font-medium text-white bg-red-700 rounded-lg hover:bg-red-800"
             >
               Ja, radera
             </button>
@@ -59,28 +60,32 @@ export function DeleteConfirm({
         </div>
       ) : (
         <div>
-          <p className="text-sm text-stone-600 mb-4">
+          <label
+            htmlFor={`${uid}-confirm`}
+            className="block text-[15px] text-stone-700 mb-4"
+          >
             Skriv <strong>RADERA</strong> nedan för att bekräfta:
-          </p>
+          </label>
           <input
+            id={`${uid}-confirm`}
             type="text"
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg border border-stone-200 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:border-red-400 mb-4"
+            className="w-full px-4 py-2 rounded-lg border border-stone-300 text-[15px] text-ink focus:border-red-600 mb-4"
             placeholder="RADERA"
             autoFocus
           />
           <div className="flex gap-3 justify-end">
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-800"
+              className="px-4 py-2 text-sm font-medium text-stone-700 hover:text-ink rounded-lg"
             >
               Avbryt
             </button>
             <button
               onClick={handleFinalConfirm}
               disabled={confirmText !== "RADERA"}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm font-medium text-white bg-red-700 rounded-lg hover:bg-red-800 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Radera permanent
             </button>
